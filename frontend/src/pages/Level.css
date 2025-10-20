@@ -1,0 +1,33 @@
+.level-container {
+  padding: 16px;
+  font-family: sans-serif;
+}
+
+.instructions {
+  margin: 12px 0;
+  padding: 8px;
+  border: 1px solid #ccc;
+}
+
+iframe.preview {
+  width: 100%;
+  height: 300px;
+  border: 1px solid #ccc;
+  margin-top: 12px;
+  background: white;
+}
+
+button.run-test {
+  padding: 8px 16px;
+  margin-top: 12px;
+}
+
+.test-result {
+  margin-top: 16px;
+  padding: 8px;
+  border: 1px solid green;
+}
+
+pre.wrap {
+  white-space: pre-wrap;
+}

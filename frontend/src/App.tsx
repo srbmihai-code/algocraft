@@ -1,11 +1,12 @@
-import './App.css'
+import { Routes, Route } from 'react-router-dom'
+import Home from './pages/Home'
+import Level from './pages/Level'
 
-function App() {
+export default function App() {
   return (
-    <>
-      <p>Hello world!</p>
-    </>
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/level/:levelName" element={<Level />} />
+    </Routes>
   )
 }
-
-export default App
