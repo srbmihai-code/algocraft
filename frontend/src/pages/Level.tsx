@@ -8,6 +8,7 @@ import { linter, lintGutter } from "@codemirror/lint";
 import type { TestResult } from "../tests/types";
 import { parse } from "acorn";
 import { makeHtmlBlob } from "../utils/makeHtmlBlob";
+import ReactMarkdown from "react-markdown";
 import "./Level.css";
 
 type LevelFiles = {
@@ -42,7 +43,6 @@ export default function Level() {
   const [jsCode, setJsCode] = useState("");
   const [TestFuncCode, setTestFuncCode] = useState<string | null>(null);
   const [testResult, setTestResult] = useState<TestResult | null>(null);
-
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   // Load level files and test function
@@ -58,7 +58,7 @@ export default function Level() {
         try {
           const res = await fetch(path);
           if (res.ok) return await res.text();
-        } catch { }
+        } catch {}
         return undefined;
       };
 
@@ -136,50 +136,49 @@ export default function Level() {
   };
 
   return (
-<div className="level-container">
-  <h2>{levelName}</h2>
+    <div className="level-container">
+      <h2>{levelName}</h2>
 
-  {files.instructions && (
-    <div className="instructions">
-      <pre className="wrap">{files.instructions}</pre>
+      {files.instructions && (
+        <div className="instructions">
+          <ReactMarkdown>{files.instructions}</ReactMarkdown>
+        </div>
+      )}
+
+      <h3>HTML</h3>
+      <CodeMirror value={htmlCode} height="150px" extensions={[html()]} onChange={setHtmlCode} />
+
+      {files.css && (
+        <>
+          <h3>CSS</h3>
+          <CodeMirror value={cssCode} height="120px" extensions={[css()]} onChange={setCssCode} />
+        </>
+      )}
+
+      {files.js && (
+        <>
+          <h3>JS</h3>
+          <CodeMirror
+            value={jsCode}
+            height="140px"
+            extensions={[javascript(), lintGutter(), syntaxLinter]}
+            onChange={(v) => setJsCode(v)}
+          />
+        </>
+      )}
+
+      <button className="run-test" onClick={runTest}>
+        Run Test
+      </button>
+
+      <iframe ref={iframeRef} className="preview" sandbox="allow-scripts" title="Preview" />
+
+      {testResult && (
+        <div className="test-result">
+          <h3>Test Result</h3>
+          <pre className="wrap">{testResult.message}</pre>
+        </div>
+      )}
     </div>
-  )}
-
-  <h3>HTML</h3>
-  <CodeMirror value={htmlCode} height="150px" extensions={[html()]} onChange={setHtmlCode} />
-
-  {files.css && (
-    <>
-      <h3>CSS</h3>
-      <CodeMirror value={cssCode} height="120px" extensions={[css()]} onChange={setCssCode} />
-    </>
-  )}
-
-  {files.js && (
-    <>
-      <h3>JS</h3>
-      <CodeMirror
-        value={jsCode}
-        height="140px"
-        extensions={[javascript(), lintGutter(), syntaxLinter]}
-        onChange={(v) => setJsCode(v)}
-      />
-    </>
-  )}
-
-  <button className="run-test" onClick={runTest}>
-    Run Test
-  </button>
-
-  <iframe ref={iframeRef} className="preview" sandbox="allow-scripts" title="Preview" />
-{testResult && (
-  <div className="test-result">
-    <h3>Test Result</h3>
-    <pre className="wrap">{testResult.message}</pre>
-  </div>
-)}
-
-
-</div>
-  )
+  );
 }
