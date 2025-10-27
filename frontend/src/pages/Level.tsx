@@ -8,14 +8,35 @@ import { linter, lintGutter } from "@codemirror/lint";
 import type { TestResult } from "../tests/types";
 import { parse } from "acorn";
 import { makeHtmlBlob } from "../utils/makeHtmlBlob";
-import ReactMarkdown from "react-markdown";
 import "./Level.css";
+import MarkdownWithSpoilers from "../components/MarkdownWithSpoilers";
 
 type LevelFiles = {
   html?: string;
   css?: string;
   js?: string;
   instructions?: string;
+};
+
+// Necessary to prevent Vite from giving fake files when none are found
+const filterOutViteFiles = (text: string | undefined | null): string => {
+  if (!text) return "";
+  if (text.includes('<script type="module" src="/@vite/client">')) {
+    console.warn("Sanitized Vite client script from input");
+    return "";
+  }
+  return text;
+};
+
+const setCookie = (name: string, value: string, days = 365) => {
+  const expires = new Date(Date.now() + days * 86400000).toUTCString();
+  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/`;
+};
+
+const getCookie = (name: string): string | null => {
+  const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
+  const raw = match ? decodeURIComponent(match[2]) : null;
+  return filterOutViteFiles(raw);
 };
 
 const syntaxLinter = linter((view) => {
@@ -43,13 +64,18 @@ export default function Level() {
   const [jsCode, setJsCode] = useState("");
   const [TestFuncCode, setTestFuncCode] = useState<string | null>(null);
   const [testResult, setTestResult] = useState<TestResult | null>(null);
+  const [runtimeError, setRuntimeError] = useState<{ message: string; line: number | null } | null>(null);
+  const [runtimeErrorLive, setRuntimeErrorLive] = useState<{ message: string; line: number | null } | null>(null);
+  const [hasRunTest, setHasRunTest] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const debounceRef = useRef<number | null>(null);
 
-  // Load level files and test function
+  // Load level files + test + user code from cookie
   useEffect(() => {
     if (!levelName) return;
     const safe = levelName.replace(/[^a-zA-Z0-9_-]/g, "");
     const base = `/levels/${safe}`;
+    const cookieKey = `level_${safe}`;
 
     const loadFiles = async () => {
       const newFiles: LevelFiles = {};
@@ -57,37 +83,34 @@ export default function Level() {
       const tryFetch = async (path: string) => {
         try {
           const res = await fetch(path);
-          if (res.ok) return await res.text();
+          if (res.ok) {
+            const text = await res.text();
+            return filterOutViteFiles(text);
+          }
         } catch {}
         return undefined;
       };
 
-      const htmlText = await tryFetch(`${base}/index.html`);
-      if (
-        htmlText &&
-        (htmlText.trim().toLowerCase().startsWith("<!doctype") ||
-          htmlText.trim().toLowerCase().startsWith("<html"))
-      ) {
-        newFiles.html = htmlText;
+      const cookieData = getCookie(cookieKey);
+      if (cookieData) {
+        try {
+          const parsed = JSON.parse(cookieData);
+          if (parsed.html) newFiles.html = filterOutViteFiles(parsed.html);
+          if (parsed.css) newFiles.css = filterOutViteFiles(parsed.css);
+          if (parsed.js) newFiles.js = filterOutViteFiles(parsed.js);
+        } catch {
+          console.warn("Invalid cookie data for", cookieKey);
+        }
       }
+
+      const htmlText = await tryFetch(`${base}/index.html`);
+      if (!newFiles.html && htmlText) newFiles.html = htmlText;
 
       const cssText = await tryFetch(`${base}/style.css`);
-      if (
-        cssText &&
-        !cssText.trim().toLowerCase().startsWith("<!doctype") && // Need to check this, as Vite returns an HTML file when requesting a non-existent file
-        !cssText.trim().toLowerCase().startsWith("<html")
-      ) {
-        newFiles.css = cssText;
-      }
+      if (!newFiles.css && cssText) newFiles.css = cssText;
 
       const jsText = await tryFetch(`${base}/index.js`);
-      if (
-        jsText &&
-        !jsText.trim().toLowerCase().startsWith("<!doctype") &&
-        !jsText.trim().toLowerCase().startsWith("<html")
-      ) {
-        newFiles.js = jsText;
-      }
+      if (!newFiles.js && jsText) newFiles.js = jsText;
 
       const mdText = await tryFetch(`${base}/instructions.md`);
       if (mdText) newFiles.instructions = mdText;
@@ -112,26 +135,64 @@ export default function Level() {
     loadTestFunc();
   }, [levelName]);
 
-  // Receive test results from iframe
+  // Debounced cookie + iframe update
+  useEffect(() => {
+    if (!levelName) return;
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    debounceRef.current = setTimeout(() => {
+      const safe = levelName.replace(/[^a-zA-Z0-9_-]/g, "");
+      const cookieKey = `level_${safe}`;
+      const data = JSON.stringify({ html: htmlCode, css: cssCode, js: jsCode });
+      setCookie(cookieKey, data);
+
+      if (iframeRef.current) {
+        const blob = makeHtmlBlob(htmlCode, cssCode, jsCode, TestFuncCode);
+        const url = URL.createObjectURL(blob);
+        setRuntimeErrorLive(null);
+        iframeRef.current.src = url;
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }
+    }, 500);
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [htmlCode, cssCode, jsCode, TestFuncCode, levelName]);
+
+  // Receive messages from iframe
   useEffect(() => {
     const handler = (e: MessageEvent) => {
       if (!e.data) return;
-      if (e.data.type === "test-result") setTestResult(e.data.result);
+
+      if (e.data.type === "runtime-error") {
+        setRuntimeErrorLive({
+          message: e.data.message || "Eroare necunoscută în timpul rulării",
+          line: e.data.line || null,
+        });
+      }
+
+      if (e.data.type === "test-result" && !runtimeErrorLive) {
+        setTestResult(e.data.result);
+        setRuntimeError(null);
+      }
     };
+
     window.addEventListener("message", handler);
     return () => window.removeEventListener("message", handler);
-  }, []);
-
-  // Update iframe preview
-  useEffect(() => {
-    if (!iframeRef.current) return;
-    const blob = makeHtmlBlob(htmlCode, cssCode, jsCode, TestFuncCode);
-    const url = URL.createObjectURL(blob);
-    iframeRef.current.src = url;
-    return () => URL.revokeObjectURL(url);
-  }, [htmlCode, cssCode, jsCode, TestFuncCode]);
+  }, [runtimeErrorLive]);
 
   const runTest = () => {
+    setHasRunTest(true);
+    setTestResult(null);
+    setRuntimeError(null);
+
+    if (runtimeErrorLive) {
+      setRuntimeError(runtimeErrorLive);
+      setTestResult(null);
+      return;
+    }
+
     iframeRef.current?.contentWindow?.postMessage({ type: "run-test" }, "*");
   };
 
@@ -141,17 +202,31 @@ export default function Level() {
 
       {files.instructions && (
         <div className="instructions">
-          <ReactMarkdown>{files.instructions}</ReactMarkdown>
+            <MarkdownWithSpoilers content={files.instructions}/>
         </div>
       )}
 
-      <h3>HTML</h3>
-      <CodeMirror value={htmlCode} height="150px" extensions={[html()]} onChange={setHtmlCode} />
+      {files.html && (
+        <>
+          <h3>HTML</h3>
+          <CodeMirror
+            value={htmlCode}
+            height="150px"
+            extensions={[html()]}
+            onChange={setHtmlCode}
+          />
+        </>
+      )}
 
       {files.css && (
         <>
           <h3>CSS</h3>
-          <CodeMirror value={cssCode} height="120px" extensions={[css()]} onChange={setCssCode} />
+          <CodeMirror
+            value={cssCode}
+            height="120px"
+            extensions={[css()]}
+            onChange={setCssCode}
+          />
         </>
       )}
 
@@ -168,14 +243,21 @@ export default function Level() {
       )}
 
       <button className="run-test" onClick={runTest}>
-        Run Test
+        Rulează testul
       </button>
 
-      <iframe ref={iframeRef} className="preview" sandbox="allow-scripts" title="Preview" />
+      <iframe ref={iframeRef} className="preview" sandbox="allow-scripts" title="Previzualizare" />
 
-      {testResult && (
+      {hasRunTest && runtimeError && (
+        <div className="test-result error">
+          <h3>Eroare la rulare</h3>
+          <pre className="wrap">{runtimeError.message}</pre>
+        </div>
+      )}
+
+      {hasRunTest && testResult && (
         <div className="test-result">
-          <h3>Test Result</h3>
+          <h3>Rezultatul testului</h3>
           <pre className="wrap">{testResult.message}</pre>
         </div>
       )}

@@ -31,3 +31,16 @@ button.run-test {
 pre.wrap {
   white-space: pre-wrap;
 }
+.spoiler {
+  background-color: #444;
+  color: transparent;
+  border-radius: 3px;
+  padding: 0 4px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.spoiler:hover {
+  background-color: #fff;
+  color: #444
+}
