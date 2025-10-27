@@ -1,4 +1,3 @@
-
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
@@ -10,7 +9,7 @@ function MarkdownWithSpoilers({ content }: { content: string }) {
       rehypePlugins={[rehypeRaw]}
       skipHtml={false}
       components={{
-        span: ({ node, className, children }) => {
+        span: ({ className, children }) => {
           if (className?.includes("spoiler")) {
             return <span className="spoiler">{children}</span>;
           }
