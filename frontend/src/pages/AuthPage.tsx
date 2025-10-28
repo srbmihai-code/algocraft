@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { login, signup } from "../utils/api";
 import "./AuthPage.css";
 
 export default function AuthPage() {
@@ -7,17 +8,20 @@ export default function AuthPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
 
   const resetForm = () => {
     setUsername("");
     setPassword("");
     setConfirmPassword("");
     setError("");
+    setMessage("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setMessage("");
 
     if (!username || !password) {
       setError("Nume de utilizator și parolă sunt obligatorii.");
@@ -31,11 +35,11 @@ export default function AuthPage() {
 
     try {
       if (mode === "login") {
-        console.log("Logging in", { username, password });
-        alert("Autentificare reușită!");
+        const res = await login(username, password);
+        setMessage(res.message);
       } else {
-        console.log("Signing up", { username, password });
-        alert("Cont creat cu succes!");
+        const res = await signup(username, password);
+        setMessage(res.message);
         setMode("login");
         resetForm();
       }
@@ -69,22 +73,19 @@ export default function AuthPage() {
           />
         )}
         {error && <p className="error">{error}</p>}
+        {message && <p className="message">{message}</p>}
         <button type="submit">{mode === "login" ? "Autentificare" : "Creează cont"}</button>
       </form>
       <p className="toggle-text">
         {mode === "login" ? (
           <>
             Nu ai un cont?{" "}
-            <button onClick={() => { setMode("signup"); resetForm(); }}>
-              Creează cont
-            </button>
+            <button onClick={() => { setMode("signup"); resetForm(); }}>Creează cont</button>
           </>
         ) : (
           <>
             Ai deja un cont?{" "}
-            <button onClick={() => { setMode("login"); resetForm(); }}>
-              Autentificare
-            </button>
+            <button onClick={() => { setMode("login"); resetForm(); }}>Autentificare</button>
           </>
         )}
       </p>
