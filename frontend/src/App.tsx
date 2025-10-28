@@ -1,12 +1,14 @@
 import { Routes, Route } from 'react-router-dom'
 import Home from './pages/Home'
 import Level from './pages/Level'
+import AuthPage from './pages/AuthPage'
 
 export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/level/:levelName" element={<Level />} />
+      <Route path="/auth" element={<AuthPage />} />
     </Routes>
   )
 }

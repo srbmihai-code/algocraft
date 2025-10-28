@@ -2,7 +2,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 
-function MarkdownWithSpoilers({ content }: { content: string }) {
+export default function MarkdownWithSpoilers({ content }: { content: string }) {
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
@@ -21,5 +21,3 @@ function MarkdownWithSpoilers({ content }: { content: string }) {
     </ReactMarkdown>
   );
 }
-
-export default MarkdownWithSpoilers;
