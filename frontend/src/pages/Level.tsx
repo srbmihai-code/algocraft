@@ -18,11 +18,10 @@ type LevelFiles = {
   instructions?: string;
 };
 
-// Necessary to prevent Vite from giving fake files when none are found
+// Necessary to prevent Vite or the server from giving fake files when none are found
 const filterOutViteFiles = (text: string | undefined | null): string => {
   if (!text) return "";
-  if (text.includes('<script type="module" src="/@vite/client">')) {
-    console.warn("Sanitized Vite client script from input");
+  if (text.includes('<script type="module" src="/@vite/client">') || text.includes('<div id="root"></div>')) {
     return "";
   }
   return text;
