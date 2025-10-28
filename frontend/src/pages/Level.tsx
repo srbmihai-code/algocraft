@@ -235,7 +235,7 @@ export default function Level() {
           <h3>JS</h3>
           <CodeMirror
             value={jsCode}
-            height="140px"
+            height="340px"
             extensions={[javascript(), lintGutter(), syntaxLinter]}
             onChange={(v) => setJsCode(v)}
           />
@@ -246,7 +246,7 @@ export default function Level() {
         Rulează testul
       </button>
 
-      <iframe ref={iframeRef} className="preview" sandbox="allow-scripts" title="Previzualizare" />
+      <iframe ref={iframeRef} className={`preview ${!htmlCode && 'hidden'}`} sandbox="allow-scripts" title="Previzualizare" />
 
       {hasRunTest && runtimeError && (
         <div className="test-result error">

@@ -44,3 +44,6 @@ pre.wrap {
   background-color: #fff;
   color: #444
 }
+.hidden {
+  display: none
+}
