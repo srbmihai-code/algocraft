@@ -12,6 +12,8 @@ const port = process.env.PORT || 3001;
 app.use(express.json());
 app.use(cookieParser());
 
+app.set("trust proxy", 1);
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "secretkey",
@@ -19,12 +21,13 @@ app.use(
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: process.env.NODE_ENV === "production", 
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 1000 * 60 * 60 * 24,
     },
   })
 );
+
 
 if (process.env.NODE_ENV === "production") {
   app.use(cors({
@@ -76,6 +79,7 @@ app.post("/api/login", (req, res) => {
 
     req.session.userId = user.id;
     console.log(`User logged in: ${username} (ID: ${user.id})`);
+    console.log("Session after login:", req.session);
     res.json({ success: true, message: "Autentificare reușită." });
   });
 });
