@@ -5,6 +5,7 @@ import htmlIcon from "../assets/html.png";
 import cssIcon from "../assets/css.png";
 import jsIcon from "../assets/js.png";
 import "./LevelsList.css";
+import { getApiBase } from "../utils/apiBase";
 
 type Level = {
   levelName: string;
@@ -22,14 +23,14 @@ export default function LevelsList() {
     setLevels(levelsData as Level[]);
     const fetchUserData = async () => {
       try {
-        const userRes = await fetch("http://localhost:3001/api/me", {
+        const userRes = await fetch(`${getApiBase()}/me`, {
           credentials: "include",
         });
         if (userRes.ok) {
           const userData = await userRes.json();
           if (userData.success) setUsername(userData.username);
 
-          const levelsRes = await fetch("http://localhost:3001/api/completed-levels", {
+          const levelsRes = await fetch(`${getApiBase()}/completed-levels`, {
             credentials: "include",
           });
           if (levelsRes.ok) {
@@ -61,7 +62,7 @@ export default function LevelsList() {
 
   const handleLogout = async () => {
     try {
-      await fetch("http://localhost:3001/api/logout", {
+      await fetch(`${getApiBase()}/logout`, {
         method: "POST",
         credentials: "include",
       });

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./AuthPage.css";
+import { getApiBase } from "../utils/apiBase";
 
 async function login(username: string, password: string) {
-  const res = await fetch("http://localhost:3001/api/login", {
+  const res = await fetch(`${getApiBase()}/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -13,7 +14,7 @@ async function login(username: string, password: string) {
 }
 
 async function signup(username: string, password: string) {
-  const res = await fetch("http://localhost:3001/api/signup", {
+  const res = await fetch(`${getApiBase()}/signup`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -23,7 +24,7 @@ async function signup(username: string, password: string) {
 }
 
 async function checkSession() {
-  const res = await fetch("http://localhost:3001/api/session", {
+  const res = await fetch(`{getApiBase()}/session`, {
     credentials: "include",
   });
   return res.json();

@@ -11,6 +11,7 @@ import MarkdownWithSpoilers from "../components/MarkdownWithSpoilers";
 import levelsData from "../utils/levels.json";
 import type { TestResult } from "../tests/types";
 import "./Level.css";
+import { getApiBase } from "../utils/apiBase";
 
 type LevelFiles = { html?: string; css?: string; js?: string; instructions?: string };
 
@@ -119,12 +120,12 @@ export default function Level() {
 
     const fetchUserAndCompletion = async () => {
       try {
-        const meRes = await fetch("http://localhost:3001/api/me", { credentials: "include" });
+        const meRes = await fetch(`${getApiBase()}/me`, { credentials: "include" });
         const meData = await meRes.json();
         if (meData.success) {
           setUsername(meData.username);
 
-          const completedRes = await fetch("http://localhost:3001/api/completed-levels", { credentials: "include" });
+          const completedRes = await fetch(`${getApiBase()}/completed-levels`, { credentials: "include" });
           const completedData = await completedRes.json();
           if (completedData.success) {
             setIsCompleted(completedData.levels.some((l: any) => l.level_name === levelName));
@@ -173,7 +174,7 @@ export default function Level() {
 
         if (e.data.result?.pass && username && !isCompleted) {
 
-          fetch("http://localhost:3001/api/complete-level", {
+          fetch(`${getApiBase()}/complete-level`, {
             method: "POST",
             credentials: "include",
             headers: { "Content-Type": "application/json" },
