@@ -32,9 +32,7 @@ if (process.env.NODE_ENV !== "production") {
 
 app.post("/api/signup", async (req, res) => {
   const { username, password } = req.body;
-  if (!username || !password) {
-    return res.status(400).json({ success: false, message: "Nume de utilizator și parolă sunt obligatorii." });
-  }
+  if (!username || !password) return res.status(400).json({ success: false, message: "Nume de utilizator și parolă sunt obligatorii." });
 
   try {
     const hash = await bcrypt.hash(password, 10);
@@ -43,13 +41,12 @@ app.post("/api/signup", async (req, res) => {
       [username, hash],
       function (err) {
         if (err) {
-          if (err.code === "SQLITE_CONSTRAINT") {
-            return res.status(400).json({ success: false, message: "Numele de utilizator există deja." });
-          }
+          if (err.code === "SQLITE_CONSTRAINT") return res.status(400).json({ success: false, message: "Numele de utilizator există deja." });
           return res.status(500).json({ success: false, message: "Eroare la baza de date." });
         }
 
         req.session.userId = this.lastID;
+        console.log(`User created: ${username} (ID: ${this.lastID})`);
         res.json({ success: true, message: "Cont creat cu succes." });
       }
     );
@@ -60,9 +57,7 @@ app.post("/api/signup", async (req, res) => {
 
 app.post("/api/login", (req, res) => {
   const { username, password } = req.body;
-  if (!username || !password) {
-    return res.status(400).json({ success: false, message: "Nume de utilizator și parolă sunt obligatorii." });
-  }
+  if (!username || !password) return res.status(400).json({ success: false, message: "Nume de utilizator și parolă sunt obligatorii." });
 
   db.get("SELECT * FROM users WHERE username = ?", [username], async (err, user) => {
     if (err) return res.status(500).json({ success: false, message: "Eroare la baza de date." });
@@ -72,22 +67,18 @@ app.post("/api/login", (req, res) => {
     if (!match) return res.status(400).json({ success: false, message: "Nume de utilizator sau parolă incorecte." });
 
     req.session.userId = user.id;
+    console.log(`User logged in: ${username} (ID: ${user.id})`);
     res.json({ success: true, message: "Autentificare reușită." });
   });
 });
 
 app.get("/api/session", (req, res) => {
-  if (req.session.userId) {
-    res.json({ authenticated: true, userId: req.session.userId });
-  } else {
-    res.json({ authenticated: false });
-  }
+  if (req.session.userId) res.json({ authenticated: true, userId: req.session.userId });
+  else res.json({ authenticated: false });
 });
 
 app.get("/api/me", (req, res) => {
-  if (!req.session.userId) {
-    return res.status(401).json({ success: false, message: "Neautentificat." });
-  }
+  if (!req.session.userId) return res.status(401).json({ success: false, message: "Neautentificat." });
 
   db.get("SELECT username FROM users WHERE id = ?", [req.session.userId], (err, user) => {
     if (err) return res.status(500).json({ success: false, message: "Eroare la baza de date." });
@@ -97,9 +88,7 @@ app.get("/api/me", (req, res) => {
 });
 
 app.get("/api/completed-levels", (req, res) => {
-  if (!req.session.userId) {
-    return res.status(401).json({ success: false, message: "Neautorizat." });
-  }
+  if (!req.session.userId) return res.status(401).json({ success: false, message: "Neautorizat." });
 
   db.all("SELECT * FROM completed_levels WHERE user_id = ?", [req.session.userId], (err, rows) => {
     if (err) return res.status(500).json({ success: false, message: "Eroare la baza de date." });
@@ -108,24 +97,23 @@ app.get("/api/completed-levels", (req, res) => {
 });
 
 app.post("/api/complete-level", (req, res) => {
-  if (!req.session.userId) {
-    return res.status(401).json({ success: false, message: "Neautentificat." });
-  }
+  if (!req.session.userId) return res.status(401).json({ success: false, message: "Neautentificat." });
 
   const { level_name } = req.body;
-  if (!level_name) {
-    return res.status(400).json({ success: false, message: "Nivelul este obligatoriu." });
-  }
+  if (!level_name) return res.status(400).json({ success: false, message: "Nivelul este obligatoriu." });
 
   db.run("INSERT INTO completed_levels (user_id, level_name) VALUES (?, ?)", [req.session.userId, level_name], function (err) {
     if (err) return res.status(500).json({ success: false, message: "Eroare la salvarea nivelului completat." });
+    console.log(`Level completed: ${level_name} by user ID: ${req.session.userId}`);
     res.json({ success: true, message: "Nivelul a fost marcat ca finalizat." });
   });
 });
 
 app.post("/api/logout", (req, res) => {
+  const userId = req.session.userId;
   req.session.destroy(() => {
     res.clearCookie("connect.sid");
+    console.log(`User logged out: ID ${userId}`);
     res.json({ success: true, message: "Deconectare reușită." });
   });
 });
