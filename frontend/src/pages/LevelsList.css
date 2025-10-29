@@ -1,0 +1,61 @@
+.levels-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.levels-list {
+  list-style: none;
+  padding: 0;
+}
+
+.level-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  margin-bottom: 0.5rem;
+  border-radius: 5px;
+}
+
+.level-item.html {
+  background-color: #fce4ec;
+}
+
+.level-item.css {
+  background-color: #e3f2fd;
+}
+
+.level-item.js {
+  background-color: #fff9c4;
+}
+
+.level-icon {
+  width: 30px;
+  height: 30px;
+  margin-right: 0.5rem;
+}
+
+.level-name {
+  font-weight: bold;
+  flex: 1;
+}
+
+.level-language {
+  font-style: italic;
+  opacity: 0.7;
+}
+.level-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-decoration: none;
+  color: inherit;
+  width: 100%;
+}
+
+.level-link:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 5px;
+}

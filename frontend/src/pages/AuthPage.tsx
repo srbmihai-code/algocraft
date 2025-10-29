@@ -1,6 +1,33 @@
-import React, { useState } from "react";
-import { login, signup } from "../utils/api";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "./AuthPage.css";
+
+async function login(username: string, password: string) {
+  const res = await fetch("http://localhost:3001/api/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ username, password }),
+  });
+  return res.json();
+}
+
+async function signup(username: string, password: string) {
+  const res = await fetch("http://localhost:3001/api/signup", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ username, password }),
+  });
+  return res.json();
+}
+
+async function checkSession() {
+  const res = await fetch("http://localhost:3001/api/session", {
+    credentials: "include",
+  });
+  return res.json();
+}
 
 export default function AuthPage() {
   const [mode, setMode] = useState<"login" | "signup">("login");
@@ -9,6 +36,13 @@ export default function AuthPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    checkSession().then((res) => {
+      if (res.authenticated) navigate("/levels");
+    });
+  }, [navigate]);
 
   const resetForm = () => {
     setUsername("");
@@ -36,12 +70,22 @@ export default function AuthPage() {
     try {
       if (mode === "login") {
         const res = await login(username, password);
-        setMessage(res.message);
+        if (res.success) {
+          setMessage(res.message);
+          navigate("/levels");
+        } else {
+          setError(res.message);
+        }
       } else {
         const res = await signup(username, password);
-        setMessage(res.message);
-        setMode("login");
-        resetForm();
+        if (res.success) {
+          setMessage(res.message);
+          setMode("login");
+          resetForm();
+          navigate("/levels");
+        } else {
+          setError(res.message);
+        }
       }
     } catch {
       setError("Ceva nu a mers bine. Încearcă din nou.");
@@ -80,12 +124,26 @@ export default function AuthPage() {
         {mode === "login" ? (
           <>
             Nu ai un cont?{" "}
-            <button onClick={() => { setMode("signup"); resetForm(); }}>Creează cont</button>
+            <button
+              onClick={() => {
+                setMode("signup");
+                resetForm();
+              }}
+            >
+              Creează cont
+            </button>
           </>
         ) : (
           <>
             Ai deja un cont?{" "}
-            <button onClick={() => { setMode("login"); resetForm(); }}>Autentificare</button>
+            <button
+              onClick={() => {
+                setMode("login");
+                resetForm();
+              }}
+            >
+              Autentificare
+            </button>
           </>
         )}
       </p>

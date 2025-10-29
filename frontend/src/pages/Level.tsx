@@ -1,41 +1,23 @@
 import { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import CodeMirror from "@uiw/react-codemirror";
 import { html } from "@codemirror/lang-html";
 import { css } from "@codemirror/lang-css";
 import { javascript } from "@codemirror/lang-javascript";
 import { linter, lintGutter } from "@codemirror/lint";
-import type { TestResult } from "../tests/types";
 import { parse } from "acorn";
 import { makeHtmlBlob } from "../utils/makeHtmlBlob";
-import "./Level.css";
 import MarkdownWithSpoilers from "../components/MarkdownWithSpoilers";
+import levelsData from "../utils/levels.json";
+import type { TestResult } from "../tests/types";
+import "./Level.css";
 
-type LevelFiles = {
-  html?: string;
-  css?: string;
-  js?: string;
-  instructions?: string;
-};
+type LevelFiles = { html?: string; css?: string; js?: string; instructions?: string };
 
-// Necessary to prevent Vite or the server from giving fake files when none are found
-const filterOutViteFiles = (text: string | undefined | null): string => {
+const filterOutViteFiles = (text: string | undefined | null) => {
   if (!text) return "";
-  if (text.includes('<script type="module" src="/@vite/client">') || text.includes('<div id="root"></div>')) {
-    return "";
-  }
+  if (text.includes('<script type="module" src="/@vite/client">') || text.includes('<div id="root"></div>')) return "";
   return text;
-};
-
-const setCookie = (name: string, value: string, days = 365) => {
-  const expires = new Date(Date.now() + days * 86400000).toUTCString();
-  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/`;
-};
-
-const getCookie = (name: string): string | null => {
-  const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
-  const raw = match ? decodeURIComponent(match[2]) : null;
-  return filterOutViteFiles(raw);
 };
 
 const syntaxLinter = linter((view) => {
@@ -44,19 +26,14 @@ const syntaxLinter = linter((view) => {
     parse(code, { ecmaVersion: 2020 });
     return [];
   } catch (err: any) {
-    return [
-      {
-        from: 0,
-        to: view.state.doc.length,
-        severity: "error",
-        message: err.message,
-      },
-    ];
+    return [{ from: 0, to: view.state.doc.length, severity: "error", message: err.message }];
   }
 });
 
 export default function Level() {
   const { levelName } = useParams<{ levelName: string }>();
+  const navigate = useNavigate();
+
   const [files, setFiles] = useState<LevelFiles>({});
   const [htmlCode, setHtmlCode] = useState("");
   const [cssCode, setCssCode] = useState("");
@@ -66,10 +43,28 @@ export default function Level() {
   const [runtimeError, setRuntimeError] = useState<{ message: string; line: number | null } | null>(null);
   const [runtimeErrorLive, setRuntimeErrorLive] = useState<{ message: string; line: number | null } | null>(null);
   const [hasRunTest, setHasRunTest] = useState(false);
+
+  const [username, setUsername] = useState<string | null>(null);
+  const [isCompleted, setIsCompleted] = useState(false);
+
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const debounceRef = useRef<number | null>(null);
 
-  // Load level files + test + user code from cookie
+  const currentIndex = levelsData.findIndex(l => l.levelName === levelName);
+  const prevLevel = currentIndex > 0 ? levelsData[currentIndex - 1].levelName : null;
+  const nextLevel = currentIndex < levelsData.length - 1 ? levelsData[currentIndex + 1].levelName : null;
+
+  const setCookie = (name: string, value: string, days = 365) => {
+    const expires = new Date(Date.now() + days * 86400000).toUTCString();
+    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/`;
+  };
+
+  const getCookie = (name: string): string | null => {
+    const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
+    const raw = match ? decodeURIComponent(match[2]) : null;
+    return filterOutViteFiles(raw);
+  };
+
   useEffect(() => {
     if (!levelName) return;
     const safe = levelName.replace(/[^a-zA-Z0-9_-]/g, "");
@@ -82,10 +77,7 @@ export default function Level() {
       const tryFetch = async (path: string) => {
         try {
           const res = await fetch(path);
-          if (res.ok) {
-            const text = await res.text();
-            return filterOutViteFiles(text);
-          }
+          if (res.ok) return filterOutViteFiles(await res.text());
         } catch {}
         return undefined;
       };
@@ -97,9 +89,7 @@ export default function Level() {
           if (parsed.html) newFiles.html = filterOutViteFiles(parsed.html);
           if (parsed.css) newFiles.css = filterOutViteFiles(parsed.css);
           if (parsed.js) newFiles.js = filterOutViteFiles(parsed.js);
-        } catch {
-          console.warn("Invalid cookie data for", cookieKey);
-        }
+        } catch {}
       }
 
       const htmlText = await tryFetch(`${base}/index.html`);
@@ -124,26 +114,37 @@ export default function Level() {
       try {
         const mod = await import(`../tests/${safe}.ts`);
         if (mod?.runTest) setTestFuncCode(mod.runTest.toString());
-      } catch {
-        console.warn("No test for level", safe);
-        setTestFuncCode(null);
-      }
+      } catch {}
+    };
+
+    const fetchUserAndCompletion = async () => {
+      try {
+        const meRes = await fetch("http://localhost:3001/api/me", { credentials: "include" });
+        const meData = await meRes.json();
+        if (meData.success) {
+          setUsername(meData.username);
+
+          const completedRes = await fetch("http://localhost:3001/api/completed-levels", { credentials: "include" });
+          const completedData = await completedRes.json();
+          if (completedData.success) {
+            setIsCompleted(completedData.levels.some((l: any) => l.level_name === levelName));
+          }
+        }
+      } catch {}
     };
 
     loadFiles();
     loadTestFunc();
+    fetchUserAndCompletion();
   }, [levelName]);
 
-  // Debounced cookie + iframe update
   useEffect(() => {
     if (!levelName) return;
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
     debounceRef.current = setTimeout(() => {
-      const safe = levelName.replace(/[^a-zA-Z0-9_-]/g, "");
-      const cookieKey = `level_${safe}`;
       const data = JSON.stringify({ html: htmlCode, css: cssCode, js: jsCode });
-      setCookie(cookieKey, data);
+      setCookie(`level_${levelName}`, data);
 
       if (iframeRef.current) {
         const blob = makeHtmlBlob(htmlCode, cssCode, jsCode, TestFuncCode);
@@ -159,27 +160,34 @@ export default function Level() {
     };
   }, [htmlCode, cssCode, jsCode, TestFuncCode, levelName]);
 
-  // Receive messages from iframe
   useEffect(() => {
     const handler = (e: MessageEvent) => {
       if (!e.data) return;
 
       if (e.data.type === "runtime-error") {
-        setRuntimeErrorLive({
-          message: e.data.message || "Eroare necunoscută în timpul rulării",
-          line: e.data.line || null,
-        });
+        setRuntimeErrorLive({ message: e.data.message || "Eroare necunoscută în timpul rulării", line: e.data.line || null });
       }
-
       if (e.data.type === "test-result" && !runtimeErrorLive) {
         setTestResult(e.data.result);
         setRuntimeError(null);
+
+        if (e.data.result?.pass && username && !isCompleted) {
+
+          fetch("http://localhost:3001/api/complete-level", {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ level_name: levelName }),
+          })
+            .then(() => setIsCompleted(true))
+            .catch(console.error);
+        }
       }
     };
 
     window.addEventListener("message", handler);
     return () => window.removeEventListener("message", handler);
-  }, [runtimeErrorLive]);
+  }, [runtimeErrorLive, username, isCompleted, levelName]);
 
   const runTest = () => {
     setHasRunTest(true);
@@ -199,67 +207,27 @@ export default function Level() {
     <div className="level-container">
       <h2>{levelName}</h2>
 
-      {files.instructions && (
-        <div className="instructions">
-            <MarkdownWithSpoilers content={files.instructions}/>
-        </div>
-      )}
+      {username && <p>Bine ai venit, {username}!</p>}
+      {isCompleted && <span className="completed-label">Rezolvat ✔</span>}
 
-      {files.html && (
-        <>
-          <h3>HTML</h3>
-          <CodeMirror
-            value={htmlCode}
-            height="150px"
-            extensions={[html()]}
-            onChange={setHtmlCode}
-          />
-        </>
-      )}
+      {files.instructions && <div className="instructions"><MarkdownWithSpoilers content={files.instructions} /></div>}
 
-      {files.css && (
-        <>
-          <h3>CSS</h3>
-          <CodeMirror
-            value={cssCode}
-            height="120px"
-            extensions={[css()]}
-            onChange={setCssCode}
-          />
-        </>
-      )}
+      {files.html && <><h3>HTML</h3><CodeMirror value={htmlCode} height="150px" extensions={[html()]} onChange={setHtmlCode} /></>}
+      {files.css && <><h3>CSS</h3><CodeMirror value={cssCode} height="120px" extensions={[css()]} onChange={setCssCode} /></>}
+      {files.js && <><h3>JS</h3><CodeMirror value={jsCode} height="340px" extensions={[javascript(), lintGutter(), syntaxLinter]} onChange={setJsCode} /></>}
 
-      {files.js && (
-        <>
-          <h3>JS</h3>
-          <CodeMirror
-            value={jsCode}
-            height="340px"
-            extensions={[javascript(), lintGutter(), syntaxLinter]}
-            onChange={(v) => setJsCode(v)}
-          />
-        </>
-      )}
+      <div className="level-buttons">
+        <button onClick={() => navigate("/levels")}>Niveluri</button>
+        {prevLevel && <button onClick={() => navigate(`/level/${prevLevel}`)}>Nivelul precedent</button>}
+        {nextLevel && <button onClick={() => navigate(`/level/${nextLevel}`)}>Nivelul următor</button>}
+      </div>
 
-      <button className="run-test" onClick={runTest}>
-        Rulează testul
-      </button>
+      <button className="run-test" onClick={runTest}>Rulează testul</button>
 
       <iframe ref={iframeRef} className={`preview ${!htmlCode && 'hidden'}`} sandbox="allow-scripts" title="Previzualizare" />
 
-      {hasRunTest && runtimeError && (
-        <div className="test-result error">
-          <h3>Eroare la rulare</h3>
-          <pre className="wrap">{runtimeError.message}</pre>
-        </div>
-      )}
-
-      {hasRunTest && testResult && (
-        <div className="test-result">
-          <h3>Rezultatul testului</h3>
-          <pre className="wrap">{testResult.message}</pre>
-        </div>
-      )}
+      {hasRunTest && runtimeError && <div className="test-result error"><h3>Eroare la rulare</h3><pre className="wrap">{runtimeError.message}</pre></div>}
+      {hasRunTest && testResult && <div className="test-result"><h3>Rezultatul testului</h3><pre className="wrap">{testResult.message}</pre></div>}
     </div>
   );
 }
