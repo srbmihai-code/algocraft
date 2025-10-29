@@ -26,8 +26,16 @@ app.use(
   })
 );
 
-if (process.env.NODE_ENV !== "production") {
-  app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+if (process.env.NODE_ENV === "production") {
+  app.use(cors({
+    origin: "https://algocraft-rlny.onrender.com",
+    credentials: true,
+  }));
+} else {
+  app.use(cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  }));
 }
 
 app.post("/api/signup", async (req, res) => {
