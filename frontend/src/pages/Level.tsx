@@ -68,6 +68,18 @@ export default function Level() {
 
   useEffect(() => {
     if (!levelName) return;
+
+    setFiles({});
+    setHtmlCode("");
+    setCssCode("");
+    setJsCode("");
+    setTestFuncCode(null);
+    setTestResult(null);
+    setRuntimeError(null);
+    setRuntimeErrorLive(null);
+    setHasRunTest(false);
+    setIsCompleted(false);
+
     const safe = levelName.replace(/[^a-zA-Z0-9_-]/g, "");
     const base = `/levels/${safe}`;
     const cookieKey = `level_${safe}`;
@@ -147,11 +159,14 @@ export default function Level() {
       const data = JSON.stringify({ html: htmlCode, css: cssCode, js: jsCode });
       setCookie(`level_${levelName}`, data);
 
-      if (iframeRef.current) {
+      const iframe = iframeRef.current;
+      if (iframe?.contentWindow) {
         const blob = makeHtmlBlob(htmlCode, cssCode, jsCode, TestFuncCode);
         const url = URL.createObjectURL(blob);
         setRuntimeErrorLive(null);
-        iframeRef.current.src = url;
+
+        iframe.contentWindow.location.replace(url); // Replace is needed in order to not create navigation history, which would require pressing the back button twice
+
         setTimeout(() => URL.revokeObjectURL(url), 1000);
       }
     }, 500);
@@ -166,14 +181,16 @@ export default function Level() {
       if (!e.data) return;
 
       if (e.data.type === "runtime-error") {
-        setRuntimeErrorLive({ message: e.data.message || "Eroare necunoscută în timpul rulării", line: e.data.line || null });
+        setRuntimeErrorLive({
+          message: e.data.message || "Eroare necunoscută în timpul rulării",
+          line: e.data.line || null,
+        });
       }
       if (e.data.type === "test-result" && !runtimeErrorLive) {
         setTestResult(e.data.result);
         setRuntimeError(null);
 
         if (e.data.result?.pass && username && !isCompleted) {
-
           fetch(`${getApiBase()}/complete-level`, {
             method: "POST",
             credentials: "include",
@@ -211,11 +228,35 @@ export default function Level() {
       {username && <p>Bine ai venit, {username}!</p>}
       {isCompleted && <span className="completed-label">Rezolvat ✔</span>}
 
-      {files.instructions && <div className="instructions"><MarkdownWithSpoilers content={files.instructions} /></div>}
+      {files.instructions && (
+        <div className="instructions">
+          <MarkdownWithSpoilers content={files.instructions} />
+        </div>
+      )}
 
-      {files.html && <><h3>HTML</h3><CodeMirror value={htmlCode} height="150px" extensions={[html()]} onChange={setHtmlCode} /></>}
-      {files.css && <><h3>CSS</h3><CodeMirror value={cssCode} height="120px" extensions={[css()]} onChange={setCssCode} /></>}
-      {files.js && <><h3>JS</h3><CodeMirror value={jsCode} height="340px" extensions={[javascript(), lintGutter(), syntaxLinter]} onChange={setJsCode} /></>}
+      {files.html && (
+        <>
+          <h3>HTML</h3>
+          <CodeMirror value={htmlCode} height="150px" extensions={[html()]} onChange={setHtmlCode} />
+        </>
+      )}
+      {files.css && (
+        <>
+          <h3>CSS</h3>
+          <CodeMirror value={cssCode} height="120px" extensions={[css()]} onChange={setCssCode} />
+        </>
+      )}
+      {files.js && (
+        <>
+          <h3>JS</h3>
+          <CodeMirror
+            value={jsCode}
+            height="340px"
+            extensions={[javascript(), lintGutter(), syntaxLinter]}
+            onChange={setJsCode}
+          />
+        </>
+      )}
 
       <div className="level-buttons">
         <button onClick={() => navigate("/levels")}>Niveluri</button>
@@ -225,10 +266,26 @@ export default function Level() {
 
       <button className="run-test" onClick={runTest}>Rulează testul</button>
 
-      <iframe ref={iframeRef} className={`preview ${!htmlCode && 'hidden'}`} sandbox="allow-scripts" title="Previzualizare" />
+      <iframe
+        ref={iframeRef}
+        className={`preview ${!htmlCode && "hidden"}`}
+        sandbox="allow-scripts"
+        title="Previzualizare"
+        src="about:blank"
+      />
 
-      {hasRunTest && runtimeError && <div className="test-result error"><h3>Eroare la rulare</h3><pre className="wrap">{runtimeError.message}</pre></div>}
-      {hasRunTest && testResult && <div className="test-result"><h3>Rezultatul testului</h3><pre className="wrap">{testResult.message}</pre></div>}
+      {hasRunTest && runtimeError && (
+        <div className="test-result error">
+          <h3>Eroare la rulare</h3>
+          <pre className="wrap">{runtimeError.message}</pre>
+        </div>
+      )}
+      {hasRunTest && testResult && (
+        <div className="test-result">
+          <h3>Rezultatul testului</h3>
+          <pre className="wrap">{testResult.message}</pre>
+        </div>
+      )}
     </div>
   );
 }
