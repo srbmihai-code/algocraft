@@ -95,6 +95,7 @@ export default function Level() {
         return undefined;
       };
 
+      // Load from cookie if available
       const cookieData = getCookie(cookieKey);
       if (cookieData) {
         try {
@@ -105,6 +106,7 @@ export default function Level() {
         } catch {}
       }
 
+      // Fetch files from server if not in cookie
       const htmlText = await tryFetch(`${base}/index.html`);
       if (!newFiles.html && htmlText) newFiles.html = htmlText;
 
@@ -117,17 +119,13 @@ export default function Level() {
       const mdText = await tryFetch(`${base}/instructions.md`);
       if (mdText) newFiles.instructions = mdText;
 
+      const testText = await tryFetch(`${base}/test.js`);
+      if (testText) setTestFuncCode(testText);
+
       setFiles(newFiles);
       setHtmlCode(newFiles.html || "");
       setCssCode(newFiles.css || "");
       setJsCode(newFiles.js || "");
-    };
-
-    const loadTestFunc = async () => {
-      try {
-        const mod = await import(`../tests/${safe}.ts`);
-        if (mod?.runTest) setTestFuncCode(mod.runTest.toString());
-      } catch {}
     };
 
     const fetchUserAndCompletion = async () => {
@@ -147,9 +145,9 @@ export default function Level() {
     };
 
     loadFiles();
-    loadTestFunc();
     fetchUserAndCompletion();
   }, [levelName]);
+
 
   useEffect(() => {
     if (!levelName) return;
