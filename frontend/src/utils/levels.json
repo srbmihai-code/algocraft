@@ -1,4 +1,17 @@
 [
-  { "levelName": "level1", "language": "html" },
-  { "levelName": "level2", "language": "js" }
+  {
+    "chapterURL": "introducere-frontend",
+    "chapterName": "Introducere frontend (HTML, CSS, JavaScript)",
+    "levels": [
+      { "levelName": "primii-pasi-html", "language": "html" },
+      { "levelName": "titluri-si-comentarii", "language": "html" },
+      { "levelName": "inchidere-corecta-taguri", "language": "html" },
+      { "levelName": "structura-html-completa", "language": "html" },
+      { "levelName": "paragrafe", "language": "html" },
+      { "levelName": "butoane", "language": "html" },
+      { "levelName": "input-uri", "language": "html" },
+      { "levelName": "label", "language": "html" },
+      { "levelName": "formulare", "language": "html" }
+    ]
+  }
 ]

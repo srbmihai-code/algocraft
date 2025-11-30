@@ -12,15 +12,21 @@ type Level = {
   language: "html" | "css" | "js";
 };
 
+type Chapter = {
+  chapterURL: string;
+  chapterName: string;
+  levels: Level[];
+};
+
 export default function LevelsList() {
-  const [levels, setLevels] = useState<Level[]>([]);
+  const [chapters, setChapters] = useState<Chapter[]>([]);
   const [completedLevels, setCompletedLevels] = useState<string[]>([]);
   const [username, setUsername] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    setLevels(levelsData as Level[]);
+    setChapters(levelsData as Chapter[]);
     const fetchUserData = async () => {
       try {
         const userRes = await fetch(`${getApiBase()}/me`, {
@@ -35,7 +41,8 @@ export default function LevelsList() {
           });
           if (levelsRes.ok) {
             const levelsData = await levelsRes.json();
-            if (levelsData.success) setCompletedLevels(levelsData.levels.map((l: any) => l.level_name));
+            if (levelsData.success)
+              setCompletedLevels(levelsData.levels.map((l: any) => l.level_name));
           }
         }
       } catch (err) {
@@ -87,27 +94,33 @@ export default function LevelsList() {
       ) : (
         <button onClick={() => navigate("/auth")}>Autentificare / Creare cont</button>
       )}
-      <ul className="levels-list">
-        {levels.map((level, index) => {
-          const isCompleted = completedLevels.includes(level.levelName);
-          return (
-            <li
-              key={index}
-              className={`level-item ${level.language} ${isCompleted ? "completed" : ""}`}
-            >
-              <Link
-                to={`/level/${encodeURIComponent(level.levelName)}`}
-                className="level-link"
-              >
-                <img src={getIcon(level.language)} alt={level.language} className="level-icon" />
-                <span className="level-name">{level.levelName}</span>
-                <span className="level-language">{level.language.toUpperCase()}</span>
-                {isCompleted && <span className="level-status">✔</span>}
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
+
+      {chapters.map((chapter, chapterIndex) => (
+        <div key={chapterIndex} className="chapter">
+          <h3 className="chapter-name">{chapter.chapterName}</h3>
+          <ul className="levels-list">
+            {chapter.levels.map((level, index) => {
+              const isCompleted = completedLevels.includes(level.levelName);
+              return (
+                <li
+                  key={index}
+                  className={`level-item ${level.language} ${isCompleted ? "completed" : ""}`}
+                >
+                  <Link
+                    to={`/level/${encodeURIComponent(chapter.chapterURL)}/${encodeURIComponent(level.levelName)}`}
+                    className="level-link"
+                  >
+                    <img src={getIcon(level.language)} alt={level.language} className="level-icon" />
+                    <span className="level-name">{level.levelName}</span>
+                    <span className="level-language">{level.language.toUpperCase()}</span>
+                    {isCompleted && <span className="level-status">✔</span>}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ))}
     </div>
   );
 }

@@ -8,7 +8,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
-      <Route path="/level/:levelName" element={<Level />} />
+      <Route path="/level/:chapterName/:levelName" element={<Level />} />
       <Route path="/auth" element={<AuthPage />} />
       <Route path="/levels" element={<LevelsList />} />
     </Routes>

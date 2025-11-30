@@ -32,7 +32,7 @@ const syntaxLinter = linter((view) => {
 });
 
 export default function Level() {
-  const { levelName } = useParams<{ levelName: string }>();
+  const { chapterName, levelName } = useParams<{ chapterName: string; levelName: string }>();
   const navigate = useNavigate();
 
   const [files, setFiles] = useState<LevelFiles>({});
@@ -50,11 +50,12 @@ export default function Level() {
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const debounceRef = useRef<number | null>(null);
+  const currentChapter = levelsData.find((c) => c.chapterURL === chapterName);
+  const currentIndex = currentChapter?.levels.findIndex((l) => l.levelName === levelName) ?? -1;
 
-  const currentIndex = levelsData.findIndex(l => l.levelName === levelName);
-  const prevLevel = currentIndex > 0 ? levelsData[currentIndex - 1].levelName : null;
-  const nextLevel = currentIndex < levelsData.length - 1 ? levelsData[currentIndex + 1].levelName : null;
-
+  const prevLevel = currentIndex > 0 ? currentChapter!.levels[currentIndex - 1].levelName : null;
+  const nextLevel = currentIndex < (currentChapter?.levels.length ?? 0) - 1 ? currentChapter!.levels[currentIndex + 1].levelName : null;
+  console.log(currentChapter, currentIndex, prevLevel, nextLevel, levelsData)
   const setCookie = (name: string, value: string, days = 365) => {
     const expires = new Date(Date.now() + days * 86400000).toUTCString();
     document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/`;
@@ -65,10 +66,7 @@ export default function Level() {
     const raw = match ? decodeURIComponent(match[2]) : null;
     return filterOutViteFiles(raw);
   };
-
   useEffect(() => {
-    if (!levelName) return;
-
     setFiles({});
     setHtmlCode("");
     setCssCode("");
@@ -79,11 +77,13 @@ export default function Level() {
     setRuntimeErrorLive(null);
     setHasRunTest(false);
     setIsCompleted(false);
+    if (!chapterName || !levelName) return;
 
-    const safe = levelName.replace(/[^a-zA-Z0-9_-]/g, "");
-    const base = `/levels/${safe}`;
-    const cookieKey = `level_${safe}`;
+    const safeChapter = chapterName.replace(/[^a-zA-Z0-9_-]/g, "");
+    const safeLevel = levelName.replace(/[^a-zA-Z0-9_-]/g, "");
 
+    const base = `/${safeChapter}/${safeLevel}`;
+    const cookieKey = `level_${safeChapter}_${safeLevel}`;
     const loadFiles = async () => {
       const newFiles: LevelFiles = {};
 
@@ -108,6 +108,7 @@ export default function Level() {
 
       // Fetch files from server if not in cookie
       const htmlText = await tryFetch(`${base}/index.html`);
+
       if (!newFiles.html && htmlText) newFiles.html = htmlText;
 
       const cssText = await tryFetch(`${base}/style.css`);
@@ -138,7 +139,9 @@ export default function Level() {
           const completedRes = await fetch(`${getApiBase()}/completed-levels`, { credentials: "include" });
           const completedData = await completedRes.json();
           if (completedData.success) {
-            setIsCompleted(completedData.levels.some((l: any) => l.level_name === levelName));
+            setIsCompleted(
+              completedData.levels.some((l: any) => l.level_name === levelName)
+            );
           }
         }
       } catch {}
@@ -146,16 +149,14 @@ export default function Level() {
 
     loadFiles();
     fetchUserAndCompletion();
-  }, [levelName]);
-
-
+  }, [chapterName, levelName, currentChapter]);
   useEffect(() => {
-    if (!levelName) return;
+    if (!chapterName || !levelName) return;
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
     debounceRef.current = setTimeout(() => {
       const data = JSON.stringify({ html: htmlCode, css: cssCode, js: jsCode });
-      setCookie(`level_${levelName}`, data);
+      setCookie(`level_${chapterName}_${levelName}`, data);
 
       const iframe = iframeRef.current;
       if (iframe?.contentWindow) {
@@ -163,7 +164,7 @@ export default function Level() {
         const url = URL.createObjectURL(blob);
         setRuntimeErrorLive(null);
 
-        iframe.contentWindow.location.replace(url); // Replace is needed in order to not create navigation history, which would require pressing the back button twice
+        iframe.contentWindow.location.replace(url);
 
         setTimeout(() => URL.revokeObjectURL(url), 1000);
       }
@@ -172,7 +173,7 @@ export default function Level() {
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [htmlCode, cssCode, jsCode, TestFuncCode, levelName]);
+  }, [htmlCode, cssCode, jsCode, TestFuncCode, chapterName, levelName]);
 
   useEffect(() => {
     const handler = (e: MessageEvent) => {
@@ -258,8 +259,16 @@ export default function Level() {
 
       <div className="level-buttons">
         <button onClick={() => navigate("/levels")}>Niveluri</button>
-        {prevLevel && <button onClick={() => navigate(`/level/${prevLevel}`)}>Nivelul precedent</button>}
-        {nextLevel && <button onClick={() => navigate(`/level/${nextLevel}`)}>Nivelul următor</button>}
+        {prevLevel && (
+          <button onClick={() => navigate(`/level/${chapterName}/${prevLevel}`)}>
+            Nivelul precedent
+          </button>
+        )}
+        {nextLevel && (
+          <button onClick={() => navigate(`/level/${chapterName}/${nextLevel}`)}>
+            Nivelul următor
+          </button>
+        )}
       </div>
 
       <button className="run-test" onClick={runTest}>Rulează testul</button>
