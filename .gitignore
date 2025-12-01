@@ -24,4 +24,4 @@ users.db
 *.sln
 *.sw?
 
-introducere-frontend/*
+generator.js
