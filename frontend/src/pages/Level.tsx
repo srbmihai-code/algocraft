@@ -40,6 +40,7 @@ export default function Level() {
   const [cssCode, setCssCode] = useState("");
   const [jsCode, setJsCode] = useState("");
   const [TestFuncCode, setTestFuncCode] = useState<string | null>(null);
+  const [InputTestFuncCode, setInputTestFuncCode] = useState<string | null>(null);
   const [testResult, setTestResult] = useState<TestResult | null>(null);
   const [runtimeError, setRuntimeError] = useState<{ message: string; line: number | null } | null>(null);
   const [runtimeErrorLive, setRuntimeErrorLive] = useState<{ message: string; line: number | null } | null>(null);
@@ -48,14 +49,19 @@ export default function Level() {
   const [username, setUsername] = useState<string | null>(null);
   const [isCompleted, setIsCompleted] = useState(false);
 
+  const [prevLevel, setPrevLevel] = useState<string | null>(null);
+  const [nextLevel, setNextLevel] = useState<string | null>(null);
+
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const debounceRef = useRef<number | null>(null);
-  const currentChapter = levelsData.find((c) => c.chapterURL === chapterName);
-  const currentIndex = currentChapter?.levels.findIndex((l) => l.levelName === levelName) ?? -1;
 
-  const prevLevel = currentIndex > 0 ? currentChapter!.levels[currentIndex - 1].levelName : null;
-  const nextLevel = currentIndex < (currentChapter?.levels.length ?? 0) - 1 ? currentChapter!.levels[currentIndex + 1].levelName : null;
-  console.log(currentChapter, currentIndex, prevLevel, nextLevel, levelsData)
+  useEffect(() => {
+    const chapter = levelsData.find((c) => c.chapterURL === chapterName);
+    const index = chapter?.levels.findIndex((l) => l.levelName === levelName) ?? -1;
+    setPrevLevel(index > 0 ? chapter!.levels[index - 1].levelName : null);
+    setNextLevel(index < (chapter?.levels.length ?? 0) - 1 ? chapter!.levels[index + 1].levelName : null);
+  }, [chapterName, levelName]);
+
   const setCookie = (name: string, value: string, days = 365) => {
     const expires = new Date(Date.now() + days * 86400000).toUTCString();
     document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/`;
@@ -72,6 +78,7 @@ export default function Level() {
     setCssCode("");
     setJsCode("");
     setTestFuncCode(null);
+    setInputTestFuncCode(null);
     setTestResult(null);
     setRuntimeError(null);
     setRuntimeErrorLive(null);
@@ -108,20 +115,18 @@ export default function Level() {
 
       // Fetch files from server if not in cookie
       const htmlText = await tryFetch(`${base}/index.html`);
-
       if (!newFiles.html && htmlText) newFiles.html = htmlText;
-
       const cssText = await tryFetch(`${base}/style.css`);
       if (!newFiles.css && cssText) newFiles.css = cssText;
-
       const jsText = await tryFetch(`${base}/index.js`);
       if (!newFiles.js && jsText) newFiles.js = jsText;
-
       const mdText = await tryFetch(`${base}/instructions.md`);
       if (mdText) newFiles.instructions = mdText;
 
       const testText = await tryFetch(`${base}/test.js`);
-      if (testText) setTestFuncCode(testText);
+      if (testText) setTestFuncCode(testText); 
+      const inputTestText = await tryFetch(`${base}/userInputTest.js`);
+      if (inputTestText) setInputTestFuncCode(inputTestText);
 
       setFiles(newFiles);
       setHtmlCode(newFiles.html || "");
@@ -149,7 +154,8 @@ export default function Level() {
 
     loadFiles();
     fetchUserAndCompletion();
-  }, [chapterName, levelName, currentChapter]);
+  }, [chapterName, levelName]);
+
   useEffect(() => {
     if (!chapterName || !levelName) return;
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -165,7 +171,6 @@ export default function Level() {
         setRuntimeErrorLive(null);
 
         iframe.contentWindow.location.replace(url);
-
         setTimeout(() => URL.revokeObjectURL(url), 1000);
       }
     }, 500);
@@ -206,6 +211,15 @@ export default function Level() {
     return () => window.removeEventListener("message", handler);
   }, [runtimeErrorLive, username, isCompleted, levelName]);
 
+  const runInputTest = (code: string, html: string): TestResult => {
+    try {
+      const testFunc = new Function("html", code + "\nreturn runTest(html);") as (html: string) => TestResult;
+      return testFunc(html);
+    } catch (err: any) {
+      return { pass: false, message: `❌ Eroare la rularea testului: ${err.message}` };
+    }
+  };
+
   const runTest = () => {
     setHasRunTest(true);
     setTestResult(null);
@@ -217,7 +231,27 @@ export default function Level() {
       return;
     }
 
-    iframeRef.current?.contentWindow?.postMessage({ type: "run-test" }, "*");
+    if (TestFuncCode) {
+      iframeRef.current?.contentWindow?.postMessage({ type: "run-test" }, "*");
+    } else if (InputTestFuncCode) {
+      const result = runInputTest(InputTestFuncCode, htmlCode);
+      setTestResult(result);
+    }
+    else {
+      finishLevel()
+    }
+  };
+
+  const finishLevel = async () => {
+    if ((!InputTestFuncCode  || !TestFuncCode) && username && !isCompleted) {
+      await fetch(`${getApiBase()}/complete-level`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ level_name: levelName }),
+      });
+      setIsCompleted(true);
+    }
   };
 
   return (
@@ -271,7 +305,15 @@ export default function Level() {
         )}
       </div>
 
-      <button className="run-test" onClick={runTest}>Rulează testul</button>
+      {(TestFuncCode || InputTestFuncCode) ? (
+        <button className="run-test" onClick={runTest}>
+          Rulează testul
+        </button>
+      ) : (
+        <button className="run-test" onClick={finishLevel}>
+          Finalizează
+        </button>
+      )}
 
       <iframe
         ref={iframeRef}

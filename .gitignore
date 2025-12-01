@@ -23,3 +23,5 @@ users.db
 *.njsproj
 *.sln
 *.sw?
+
+introducere-frontend/*

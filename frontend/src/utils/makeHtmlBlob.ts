@@ -7,23 +7,28 @@ export function makeHtmlBlob(
   TestFuncCode: string | null
 ): Blob {
   const html = `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="UTF-8" />
-        <style>${cssCode}</style>
-      </head>
-      <body>
-        ${htmlCode}
-        <script>${bootstrapScript}</script>
-        ${jsCode ? `<script>${jsCode}</script>` : ""}
-        ${
-          TestFuncCode
-            ? `<script>window.runTestFromParent = ${TestFuncCode};</script>`
-            : ""
-        }
-      </body>
-    </html>
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <style>${cssCode}</style>
+
+    <script defer>${bootstrapScript}</script>
+
+    ${jsCode ? `<script defer>${jsCode}</script>` : ""}
+
+    ${
+      TestFuncCode
+        ? `<script defer>window.runTestFromParent = ${TestFuncCode};</script>`
+        : ""
+    }
+  </head>
+
+  <body>
+    ${htmlCode}
+  </body>
+</html>
+
   `;
   return new Blob([html], { type: "text/html" });
 }
