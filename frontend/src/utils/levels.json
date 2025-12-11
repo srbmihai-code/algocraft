@@ -1,17 +1,46 @@
 [
   {
-    "chapterURL": "introducere-frontend",
-    "chapterName": "Introducere frontend (HTML, CSS, JavaScript)",
+    "chapterURL": "html",
+    "chapterName": "HTML",
     "levels": [
-      { "levelName": "primii-pasi-html", "language": "html" },
-      { "levelName": "titluri-si-comentarii", "language": "html" },
-      { "levelName": "inchidere-corecta-taguri", "language": "html" },
-      { "levelName": "structura-html-completa", "language": "html" },
-      { "levelName": "paragrafe", "language": "html" },
-      { "levelName": "butoane", "language": "html" },
-      { "levelName": "input-uri", "language": "html" },
-      { "levelName": "label", "language": "html" },
-      { "levelName": "formulare", "language": "html" }
+      { "levelURL": "primii-pasi-html", "levelName": "Primii pași HTML", "language": "html" },
+      { "levelURL": "titluri-si-comentarii", "levelName": "Titluri și comentarii", "language": "html" },
+      { "levelURL": "inchidere-corecta-taguri", "levelName": "Închidere corectă taguri", "language": "html" },
+      { "levelURL": "structura-html-completa", "levelName": "Structură HTML completă", "language": "html" },
+      { "levelURL": "paragrafe", "levelName": "Paragrafe", "language": "html" },
+      { "levelURL": "butoane", "levelName": "Butoane", "language": "html" },
+      { "levelURL": "input-uri", "levelName": "Input-uri", "language": "html" },
+      { "levelURL": "label", "levelName": "Label", "language": "html" },
+      { "levelURL": "formulare", "levelName": "Formulare", "language": "html" }
+    ]
+  },
+
+  {
+    "chapterURL": "css",
+    "chapterName": "CSS",
+    "levels": [
+      { "levelURL": "culoare-fundal", "levelName": "Culoare fundal", "language": "css" },
+      { "levelURL": "stilizare-text", "levelName": "Stilizare text", "language": "css" },
+      { "levelURL": "box-model", "levelName": "Box model", "language": "css" },
+      { "levelURL": "centrare-text", "levelName": "Centrare text", "language": "css" },
+      { "levelURL": "stilizare-buton", "levelName": "Stilizare buton", "language": "css" },
+      { "levelURL": "stilizare-input", "levelName": "Stilizare input", "language": "css" }
+    ]
+  },
+
+  {
+    "chapterURL": "js",
+    "chapterName": "Baza JavaScript",
+    "levels": [
+      { "levelURL": "variabile", "levelName": "Variabile și tipuri", "language": "js" },
+      { "levelURL": "operatori", "levelName": "Operatori de bază", "language": "js" },
+      { "levelURL": "conditii", "levelName": "Condiții (if / else)", "language": "js" },
+      { "levelURL": "bucle", "levelName": "Bucle (for / while)", "language": "js" },
+      { "levelURL": "functii", "levelName": "Funcții", "language": "js" },
+      { "levelURL": "obiecte", "levelName": "Obiecte și acces proprietăți", "language": "js" },
+      { "levelURL": "dom", "levelName": "Manipulare DOM", "language": "js" },
+      { "levelURL": "event-listeners", "levelName": "Event listeners și update DOM", "language": "js" },
+      { "levelURL": "calculator", "levelName": "Mini-proiect — Calculator", "language": "js", "isProject": true }      
     ]
   }
 ]

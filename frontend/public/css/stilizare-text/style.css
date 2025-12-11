@@ -1,0 +1,14 @@
+.container {
+  background-color: #f5f7fa; /* fundal deschis */
+}
+
+h1 {
+  color: #1f2937;
+  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 2rem;
+}
+p {
+  color: #374151;
+  font-family: Georgia, 'Times New Roman', Times, serif;
+  line-height: 1.5;
+}

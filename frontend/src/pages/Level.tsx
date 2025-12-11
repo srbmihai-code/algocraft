@@ -32,9 +32,8 @@ const syntaxLinter = linter((view) => {
 });
 
 export default function Level() {
-  const { chapterName, levelName } = useParams<{ chapterName: string; levelName: string }>();
+  const { chapterName, levelURL } = useParams<{ chapterName: string; levelURL: string }>();
   const navigate = useNavigate();
-
   const [files, setFiles] = useState<LevelFiles>({});
   const [htmlCode, setHtmlCode] = useState("");
   const [cssCode, setCssCode] = useState("");
@@ -57,10 +56,10 @@ export default function Level() {
 
   useEffect(() => {
     const chapter = levelsData.find((c) => c.chapterURL === chapterName);
-    const index = chapter?.levels.findIndex((l) => l.levelName === levelName) ?? -1;
-    setPrevLevel(index > 0 ? chapter!.levels[index - 1].levelName : null);
-    setNextLevel(index < (chapter?.levels.length ?? 0) - 1 ? chapter!.levels[index + 1].levelName : null);
-  }, [chapterName, levelName]);
+    const index = chapter?.levels.findIndex((l) => l.levelURL === levelURL) ?? -1;
+    setPrevLevel(index > 0 ? chapter!.levels[index - 1].levelURL : null);
+    setNextLevel(index < (chapter?.levels.length ?? 0) - 1 ? chapter!.levels[index + 1].levelURL : null);
+  }, [chapterName, levelURL]);
 
   const setCookie = (name: string, value: string, days = 365) => {
     const expires = new Date(Date.now() + days * 86400000).toUTCString();
@@ -84,12 +83,13 @@ export default function Level() {
     setRuntimeErrorLive(null);
     setHasRunTest(false);
     setIsCompleted(false);
-    if (!chapterName || !levelName) return;
+    if (!chapterName || !levelURL) return;
 
     const safeChapter = chapterName.replace(/[^a-zA-Z0-9_-]/g, "");
-    const safeLevel = levelName.replace(/[^a-zA-Z0-9_-]/g, "");
-
+    const safeLevel = levelURL.replace(/[^a-zA-Z0-9_-]/g, "");
+    
     const base = `/${safeChapter}/${safeLevel}`;
+    console.log(base)
     const cookieKey = `level_${safeChapter}_${safeLevel}`;
     const loadFiles = async () => {
       const newFiles: LevelFiles = {};
@@ -106,6 +106,7 @@ export default function Level() {
       const cookieData = getCookie(cookieKey);
       if (cookieData) {
         try {
+
           const parsed = JSON.parse(cookieData);
           if (parsed.html) newFiles.html = filterOutViteFiles(parsed.html);
           if (parsed.css) newFiles.css = filterOutViteFiles(parsed.css);
@@ -115,6 +116,7 @@ export default function Level() {
 
       // Fetch files from server if not in cookie
       const htmlText = await tryFetch(`${base}/index.html`);
+
       if (!newFiles.html && htmlText) newFiles.html = htmlText;
       const cssText = await tryFetch(`${base}/style.css`);
       if (!newFiles.css && cssText) newFiles.css = cssText;
@@ -145,7 +147,7 @@ export default function Level() {
           const completedData = await completedRes.json();
           if (completedData.success) {
             setIsCompleted(
-              completedData.levels.some((l: any) => l.level_name === levelName)
+              completedData.levels.some((l: any) => l.level_name === levelURL)
             );
           }
         }
@@ -154,15 +156,15 @@ export default function Level() {
 
     loadFiles();
     fetchUserAndCompletion();
-  }, [chapterName, levelName]);
+  }, [chapterName, levelURL]);
 
   useEffect(() => {
-    if (!chapterName || !levelName) return;
+    if (!chapterName || !levelURL) return;
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
     debounceRef.current = setTimeout(() => {
       const data = JSON.stringify({ html: htmlCode, css: cssCode, js: jsCode });
-      setCookie(`level_${chapterName}_${levelName}`, data);
+      setCookie(`level_${chapterName}_${levelURL}`, data);
 
       const iframe = iframeRef.current;
       if (iframe?.contentWindow) {
@@ -178,7 +180,7 @@ export default function Level() {
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [htmlCode, cssCode, jsCode, TestFuncCode, chapterName, levelName]);
+  }, [htmlCode, cssCode, jsCode, TestFuncCode, chapterName, levelURL]);
 
   useEffect(() => {
     const handler = (e: MessageEvent) => {
@@ -199,7 +201,7 @@ export default function Level() {
             method: "POST",
             credentials: "include",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ level_name: levelName }),
+            body: JSON.stringify({ level_name: levelURL }),
           })
             .then(() => setIsCompleted(true))
             .catch(console.error);
@@ -209,7 +211,7 @@ export default function Level() {
 
     window.addEventListener("message", handler);
     return () => window.removeEventListener("message", handler);
-  }, [runtimeErrorLive, username, isCompleted, levelName]);
+  }, [runtimeErrorLive, username, isCompleted, levelURL]);
 
   const runInputTest = (code: string, html: string): TestResult => {
     try {
@@ -248,7 +250,7 @@ export default function Level() {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ level_name: levelName }),
+        body: JSON.stringify({ level_name: levelURL }),
       });
       setIsCompleted(true);
     }
@@ -256,8 +258,6 @@ export default function Level() {
 
   return (
     <div className="level-container">
-      <h2>{levelName}</h2>
-
       {username && <p>Bine ai venit, {username}!</p>}
       {isCompleted && <span className="completed-label">Rezolvat ✔</span>}
 
@@ -270,13 +270,13 @@ export default function Level() {
       {files.html && (
         <>
           <h3>HTML</h3>
-          <CodeMirror value={htmlCode} height="150px" extensions={[html()]} onChange={setHtmlCode} />
+          <CodeMirror value={htmlCode} height="350px" extensions={[html()]} onChange={setHtmlCode} />
         </>
       )}
       {files.css && (
         <>
           <h3>CSS</h3>
-          <CodeMirror value={cssCode} height="120px" extensions={[css()]} onChange={setCssCode} />
+          <CodeMirror value={cssCode} height="320px" extensions={[css()]} onChange={setCssCode} />
         </>
       )}
       {files.js && (

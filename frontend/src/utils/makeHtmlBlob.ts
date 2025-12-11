@@ -13,9 +13,9 @@ export function makeHtmlBlob(
     <meta charset="UTF-8" />
     <style>${cssCode}</style>
 
-    <script defer>${bootstrapScript}</script>
+    <script>${bootstrapScript}</script>
 
-    ${jsCode ? `<script defer>${jsCode}</script>` : ""}
+
 
     ${
       TestFuncCode
@@ -27,6 +27,7 @@ export function makeHtmlBlob(
   <body>
     ${htmlCode}
   </body>
+      ${jsCode ? `<script>${jsCode}</script>` : ""}
 </html>
 
   `;

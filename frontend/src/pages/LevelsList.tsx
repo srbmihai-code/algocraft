@@ -9,6 +9,7 @@ import { getApiBase } from "../utils/apiBase";
 
 type Level = {
   levelName: string;
+  levelURL: string;
   language: "html" | "css" | "js";
 };
 
@@ -100,14 +101,14 @@ export default function LevelsList() {
           <h3 className="chapter-name">{chapter.chapterName}</h3>
           <ul className="levels-list">
             {chapter.levels.map((level, index) => {
-              const isCompleted = completedLevels.includes(level.levelName);
+              const isCompleted = completedLevels.includes(level.levelURL);
               return (
                 <li
                   key={index}
                   className={`level-item ${level.language} ${isCompleted ? "completed" : ""}`}
                 >
                   <Link
-                    to={`/level/${encodeURIComponent(chapter.chapterURL)}/${encodeURIComponent(level.levelName)}`}
+                    to={`/level/${encodeURIComponent(chapter.chapterURL)}/${encodeURIComponent(level.levelURL)}`}
                     className="level-link"
                   >
                     <img src={getIcon(level.language)} alt={level.language} className="level-icon" />

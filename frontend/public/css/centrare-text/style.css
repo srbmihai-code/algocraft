@@ -1,0 +1,13 @@
+.container {
+  background-color: antiquewhite;
+  margin: 3px;
+  border: 40px solid #e5e7eb;
+  padding: 4px
+}
+
+h1, p {
+  font-family: Arial;
+}
+p {
+  color: #4b3621;
+}
