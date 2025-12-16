@@ -4,32 +4,20 @@ import CodeMirror from "@uiw/react-codemirror";
 import { html } from "@codemirror/lang-html";
 import { css } from "@codemirror/lang-css";
 import { javascript } from "@codemirror/lang-javascript";
-import { linter, lintGutter } from "@codemirror/lint";
-import { parse } from "acorn";
+import { lintGutter } from "@codemirror/lint";
 import { makeHtmlBlob } from "../utils/makeHtmlBlob";
 import MarkdownWithSpoilers from "../components/MarkdownWithSpoilers";
 import levelsData from "../utils/levels.json";
-import type { TestResult } from "../tests/types";
+import type { TestResult, LevelFiles } from "../utils/types";
 import "./Level.css";
 import { getApiBase } from "../utils/apiBase";
+import filterOutViteFiles from "../utils/filterOutViteFiles";
+import setCookie from "../utils/setCookie";
+import getCookie from "../utils/getCookie";
+import runInputTest from "../utils/runInputTest";
+import syntaxLinter from "../utils/syntaxLinter";
 
-type LevelFiles = { html?: string; css?: string; js?: string; instructions?: string };
 
-const filterOutViteFiles = (text: string | undefined | null) => {
-  if (!text) return "";
-  if (text.includes('<script type="module" src="/@vite/client">') || text.includes('<div id="root"></div>')) return "";
-  return text;
-};
-
-const syntaxLinter = linter((view) => {
-  const code = view.state.doc.toString();
-  try {
-    parse(code, { ecmaVersion: 2020 });
-    return [];
-  } catch (err: any) {
-    return [{ from: 0, to: view.state.doc.length, severity: "error", message: err.message }];
-  }
-});
 
 export default function Level() {
   const { chapterName, levelURL } = useParams<{ chapterName: string; levelURL: string }>();
@@ -51,11 +39,11 @@ export default function Level() {
   const [prevLevel, setPrevLevel] = useState<string | null>(null);
   const [nextLevel, setNextLevel] = useState<string | null>(null);
 
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-  const previewIframeRef = useRef<HTMLIFrameElement>(null);
-
+  const iframeRef = useRef<HTMLIFrameElement>(null); // hidden test iframe
+  const previewIframeRef = useRef<HTMLIFrameElement>(null); // visible preview iframe
   const debounceRef = useRef<number | null>(null);
 
+  // Determine prev/next level
   useEffect(() => {
     const chapter = levelsData.find((c) => c.chapterURL === chapterName);
     const index = chapter?.levels.findIndex((l) => l.levelURL === levelURL) ?? -1;
@@ -63,17 +51,7 @@ export default function Level() {
     setNextLevel(index < (chapter?.levels.length ?? 0) - 1 ? chapter!.levels[index + 1].levelURL : null);
   }, [chapterName, levelURL]);
 
-  const setCookie = (name: string, value: string, days = 365) => {
-    const expires = new Date(Date.now() + days * 86400000).toUTCString();
-    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/`;
-  };
-
-  const getCookie = (name: string): string | null => {
-    const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
-    const raw = match ? decodeURIComponent(match[2]) : null;
-    return filterOutViteFiles(raw);
-  };
-
+  // Load files from cookie/server and user completion
   useEffect(() => {
     setFiles({});
     setHtmlCode("");
@@ -90,22 +68,19 @@ export default function Level() {
 
     const safeChapter = chapterName.replace(/[^a-zA-Z0-9_-]/g, "");
     const safeLevel = levelURL.replace(/[^a-zA-Z0-9_-]/g, "");
-
     const base = `/${safeChapter}/${safeLevel}`;
     const cookieKey = `level_${safeChapter}_${safeLevel}`;
 
     const loadFiles = async () => {
       const newFiles: LevelFiles = {};
-
       const tryFetch = async (path: string) => {
         try {
           const res = await fetch(path);
           if (res.ok) return filterOutViteFiles(await res.text());
-        } catch { }
+        } catch {}
         return undefined;
       };
 
-      // Load user's progress from cookie if available
       const cookieData = getCookie(cookieKey);
       if (cookieData) {
         try {
@@ -113,7 +88,7 @@ export default function Level() {
           if (parsed.html) newFiles.html = filterOutViteFiles(parsed.html);
           if (parsed.css) newFiles.css = filterOutViteFiles(parsed.css);
           if (parsed.js) newFiles.js = filterOutViteFiles(parsed.js);
-        } catch { }
+        } catch {}
       }
 
       const htmlText = await tryFetch(`${base}/index.html`);
@@ -152,13 +127,14 @@ export default function Level() {
             setIsCompleted(completedData.levels.some((l: any) => l.level_name === levelURL));
           }
         }
-      } catch { }
+      } catch {}
     };
 
     loadFiles();
     fetchUserAndCompletion();
   }, [chapterName, levelURL]);
 
+  // Update iframes & cookies on code change
   useEffect(() => {
     if (!chapterName || !levelURL) return;
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -188,30 +164,26 @@ export default function Level() {
     };
   }, [htmlCode, cssCode, jsCode, TestFuncCode, chapterName, levelURL]);
 
+  // Handle runtime errors & test results
   useEffect(() => {
     const handler = (e: MessageEvent) => {
       if (!e.data) return;
-
       if (e.data.type === "runtime-error") {
         setRuntimeErrorLive({
           message: e.data.message || "Eroare necunoscută în timpul rulării",
           line: e.data.line || null,
         });
       }
-
       if (e.data.type === "test-result" && !runtimeErrorLive) {
         setTestResult(e.data.result);
         setRuntimeError(null);
-
         if (e.data.result?.pass && username && !isCompleted) {
           fetch(`${getApiBase()}/complete-level`, {
             method: "POST",
             credentials: "include",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ level_name: levelURL }),
-          })
-            .then(() => setIsCompleted(true))
-            .catch(console.error);
+          }).then(() => setIsCompleted(true)).catch(console.error);
         }
       }
     };
@@ -220,15 +192,7 @@ export default function Level() {
     return () => window.removeEventListener("message", handler);
   }, [runtimeErrorLive, username, isCompleted, levelURL]);
 
-  const runInputTest = (code: string, html: string): TestResult => {
-    try {
-      const testFunc = new Function("html", code + "\nreturn runTest(html);") as (html: string) => TestResult;
-      return testFunc(html);
-    } catch (err: any) {
-      return { pass: false, message: `❌ Eroare la rularea testului: ${err.message}` };
-    }
-  };
-
+  // Run Test
   const runTest = () => {
     setHasRunTest(true);
     setTestResult(null);
@@ -242,15 +206,13 @@ export default function Level() {
 
     const iframe = iframeRef.current;
     if (iframe && TestFuncCode) {
-      // Reload to make sure state is lost when running a new test 
+      // Reload hidden iframe to reset state before running test
       const blob = makeHtmlBlob(htmlCode, cssCode, jsCode, TestFuncCode);
       const url = URL.createObjectURL(blob);
-
       iframe.onload = () => {
         iframe.contentWindow?.postMessage({ type: "run-test" }, "*");
         setTimeout(() => URL.revokeObjectURL(url), 2000);
       };
-
       iframe.src = url;
     } else if (InputTestFuncCode) {
       const result = runInputTest(InputTestFuncCode, htmlCode);
@@ -300,63 +262,31 @@ export default function Level() {
       {files.js && (
         <>
           <h3>JS</h3>
-          <CodeMirror
-            value={jsCode}
-            height="340px"
-            extensions={[javascript(), lintGutter(), syntaxLinter]}
-            onChange={setJsCode}
-          />
+          <CodeMirror value={jsCode} height="340px" extensions={[javascript(), lintGutter(), syntaxLinter]} onChange={setJsCode} />
         </>
       )}
 
       <div className="level-buttons">
         <button onClick={() => navigate("/levels")}>Niveluri</button>
-        {prevLevel && (
-          <button onClick={() => navigate(`/level/${chapterName}/${prevLevel}`)}>
-            Nivelul precedent
-          </button>
-        )}
-        {nextLevel && (
-          <button onClick={() => navigate(`/level/${chapterName}/${nextLevel}`)}>
-            Nivelul următor
-          </button>
-        )}
+        {prevLevel && <button onClick={() => navigate(`/level/${chapterName}/${prevLevel}`)}>Nivelul precedent</button>}
+        {nextLevel && <button onClick={() => navigate(`/level/${chapterName}/${nextLevel}`)}>Nivelul următor</button>}
       </div>
 
       {(TestFuncCode || InputTestFuncCode) ? (
-        <button className="run-test" onClick={runTest}>
-          Rulează testul
-        </button>
+        <button className="run-test" onClick={runTest}>Rulează testul</button>
       ) : (
-        <button className="run-test" onClick={finishLevel}>
-          Finalizează
-        </button>
+        <button className="run-test" onClick={finishLevel}>Finalizează</button>
       )}
 
-      <iframe
-        ref={previewIframeRef}
-        className={`preview ${!htmlCode && "hidden"}`}
-        sandbox="allow-scripts"
-        title="Previzualizare"
-        src="about:blank"
-      />
+      <iframe ref={previewIframeRef} className={`preview ${!htmlCode && "hidden"}`} sandbox="allow-scripts" title="Previzualizare" src="about:blank" />
 
       <iframe
         ref={iframeRef}
-        style={{
-          position: "absolute",
-          top: "-10000px",
-          left: "-10000px",
-          width: "800px",
-          height: "600px",
-          opacity: 0,
-          pointerEvents: "none",
-        }}
+        className="hidden-iframe"
         sandbox="allow-scripts"
         title="Test Runner"
         src="about:blank"
       />
-
 
       {hasRunTest && runtimeError && (
         <div className="test-result error">
