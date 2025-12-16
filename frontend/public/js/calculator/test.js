@@ -15,28 +15,28 @@ function runTest() {
   if (!result) {
     return { pass: false, message: "❌ Nu există un element <p> cu id='result'." };
   }
-
+  console.log(result)
   const style = window.getComputedStyle(result);
+  console.log(style)
   if (parseInt(style.fontSize) < 45 || style.fontWeight !== "700" && style.fontWeight !== "bold") {
     return { pass: false, message: "❌ Rezultatul trebuie să aibă font-size minim 45px și font-weight bold." };
   }
 
-  // Test funcționalitate operații
   result.textContent = "0";
   input.value = "10";
-  buttons[0].click(); // +
+  buttons[0].click();
   const afterAdd = Number(result.textContent);
 
   input.value = "5";
-  buttons[1].click(); // -
+  buttons[1].click();
   const afterSub = Number(result.textContent);
 
   input.value = "2";
-  buttons[2].click(); // *
+  buttons[2].click();
   const afterMul = Number(result.textContent);
 
   input.value = "4";
-  buttons[3].click(); // /
+  buttons[3].click();
   const afterDiv = Number(result.textContent);
 
   if (afterAdd !== 10 || afterSub !== 5 || afterMul !== 10 || afterDiv !== 2.5) {

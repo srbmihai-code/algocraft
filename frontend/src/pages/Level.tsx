@@ -52,6 +52,8 @@ export default function Level() {
   const [nextLevel, setNextLevel] = useState<string | null>(null);
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const previewIframeRef = useRef<HTMLIFrameElement>(null);
+
   const debounceRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -71,6 +73,7 @@ export default function Level() {
     const raw = match ? decodeURIComponent(match[2]) : null;
     return filterOutViteFiles(raw);
   };
+
   useEffect(() => {
     setFiles({});
     setHtmlCode("");
@@ -87,10 +90,10 @@ export default function Level() {
 
     const safeChapter = chapterName.replace(/[^a-zA-Z0-9_-]/g, "");
     const safeLevel = levelURL.replace(/[^a-zA-Z0-9_-]/g, "");
-    
+
     const base = `/${safeChapter}/${safeLevel}`;
-    console.log(base)
     const cookieKey = `level_${safeChapter}_${safeLevel}`;
+
     const loadFiles = async () => {
       const newFiles: LevelFiles = {};
 
@@ -98,35 +101,36 @@ export default function Level() {
         try {
           const res = await fetch(path);
           if (res.ok) return filterOutViteFiles(await res.text());
-        } catch {}
+        } catch { }
         return undefined;
       };
 
-      // Load from cookie if available
+      // Load user's progress from cookie if available
       const cookieData = getCookie(cookieKey);
       if (cookieData) {
         try {
-
           const parsed = JSON.parse(cookieData);
           if (parsed.html) newFiles.html = filterOutViteFiles(parsed.html);
           if (parsed.css) newFiles.css = filterOutViteFiles(parsed.css);
           if (parsed.js) newFiles.js = filterOutViteFiles(parsed.js);
-        } catch {}
+        } catch { }
       }
 
-      // Fetch files from server if not in cookie
       const htmlText = await tryFetch(`${base}/index.html`);
-
       if (!newFiles.html && htmlText) newFiles.html = htmlText;
+
       const cssText = await tryFetch(`${base}/style.css`);
       if (!newFiles.css && cssText) newFiles.css = cssText;
+
       const jsText = await tryFetch(`${base}/index.js`);
       if (!newFiles.js && jsText) newFiles.js = jsText;
+
       const mdText = await tryFetch(`${base}/instructions.md`);
       if (mdText) newFiles.instructions = mdText;
 
       const testText = await tryFetch(`${base}/test.js`);
-      if (testText) setTestFuncCode(testText); 
+      if (testText) setTestFuncCode(testText);
+
       const inputTestText = await tryFetch(`${base}/userInputTest.js`);
       if (inputTestText) setInputTestFuncCode(inputTestText);
 
@@ -142,16 +146,13 @@ export default function Level() {
         const meData = await meRes.json();
         if (meData.success) {
           setUsername(meData.username);
-
           const completedRes = await fetch(`${getApiBase()}/completed-levels`, { credentials: "include" });
           const completedData = await completedRes.json();
           if (completedData.success) {
-            setIsCompleted(
-              completedData.levels.some((l: any) => l.level_name === levelURL)
-            );
+            setIsCompleted(completedData.levels.some((l: any) => l.level_name === levelURL));
           }
         }
-      } catch {}
+      } catch { }
     };
 
     loadFiles();
@@ -166,13 +167,18 @@ export default function Level() {
       const data = JSON.stringify({ html: htmlCode, css: cssCode, js: jsCode });
       setCookie(`level_${chapterName}_${levelURL}`, data);
 
-      const iframe = iframeRef.current;
-      if (iframe?.contentWindow) {
+      if (iframeRef.current?.contentWindow) {
         const blob = makeHtmlBlob(htmlCode, cssCode, jsCode, TestFuncCode);
         const url = URL.createObjectURL(blob);
         setRuntimeErrorLive(null);
+        iframeRef.current.contentWindow.location.replace(url);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }
 
-        iframe.contentWindow.location.replace(url);
+      if (previewIframeRef.current?.contentWindow) {
+        const blob = makeHtmlBlob(htmlCode, cssCode, jsCode, null);
+        const url = URL.createObjectURL(blob);
+        previewIframeRef.current.contentWindow.location.replace(url);
         setTimeout(() => URL.revokeObjectURL(url), 1000);
       }
     }, 500);
@@ -192,6 +198,7 @@ export default function Level() {
           line: e.data.line || null,
         });
       }
+
       if (e.data.type === "test-result" && !runtimeErrorLive) {
         setTestResult(e.data.result);
         setRuntimeError(null);
@@ -233,19 +240,28 @@ export default function Level() {
       return;
     }
 
-    if (TestFuncCode) {
-      iframeRef.current?.contentWindow?.postMessage({ type: "run-test" }, "*");
+    const iframe = iframeRef.current;
+    if (iframe && TestFuncCode) {
+      // Reload to make sure state is lost when running a new test 
+      const blob = makeHtmlBlob(htmlCode, cssCode, jsCode, TestFuncCode);
+      const url = URL.createObjectURL(blob);
+
+      iframe.onload = () => {
+        iframe.contentWindow?.postMessage({ type: "run-test" }, "*");
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
+      };
+
+      iframe.src = url;
     } else if (InputTestFuncCode) {
       const result = runInputTest(InputTestFuncCode, htmlCode);
       setTestResult(result);
-    }
-    else {
-      finishLevel()
+    } else {
+      finishLevel();
     }
   };
 
   const finishLevel = async () => {
-    if ((!InputTestFuncCode  || !TestFuncCode) && username && !isCompleted) {
+    if ((!InputTestFuncCode || !TestFuncCode) && username && !isCompleted) {
       await fetch(`${getApiBase()}/complete-level`, {
         method: "POST",
         credentials: "include",
@@ -273,12 +289,14 @@ export default function Level() {
           <CodeMirror value={htmlCode} height="350px" extensions={[html()]} onChange={setHtmlCode} />
         </>
       )}
+
       {files.css && (
         <>
           <h3>CSS</h3>
           <CodeMirror value={cssCode} height="320px" extensions={[css()]} onChange={setCssCode} />
         </>
       )}
+
       {files.js && (
         <>
           <h3>JS</h3>
@@ -316,12 +334,29 @@ export default function Level() {
       )}
 
       <iframe
-        ref={iframeRef}
+        ref={previewIframeRef}
         className={`preview ${!htmlCode && "hidden"}`}
         sandbox="allow-scripts"
         title="Previzualizare"
         src="about:blank"
       />
+
+      <iframe
+        ref={iframeRef}
+        style={{
+          position: "absolute",
+          top: "-10000px",
+          left: "-10000px",
+          width: "800px",
+          height: "600px",
+          opacity: 0,
+          pointerEvents: "none",
+        }}
+        sandbox="allow-scripts"
+        title="Test Runner"
+        src="about:blank"
+      />
+
 
       {hasRunTest && runtimeError && (
         <div className="test-result error">
@@ -329,6 +364,7 @@ export default function Level() {
           <pre className="wrap">{runtimeError.message}</pre>
         </div>
       )}
+
       {hasRunTest && testResult && (
         <div className="test-result">
           <h3>Rezultatul testului</h3>
