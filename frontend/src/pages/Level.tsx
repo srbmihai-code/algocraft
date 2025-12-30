@@ -17,8 +17,6 @@ import getCookie from "../utils/getCookie";
 import runInputTest from "../utils/runInputTest";
 import syntaxLinter from "../utils/syntaxLinter";
 
-
-
 export default function Level() {
   const { chapterName, levelURL } = useParams<{ chapterName: string; levelURL: string }>();
   const navigate = useNavigate();
