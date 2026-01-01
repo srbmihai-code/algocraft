@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./AuthPage.css";
 import { getApiBase } from "../utils/apiBase";
+import checkSession from "../utils/checkSession";
 
 async function login(username: string, password: string) {
   const res = await fetch(`${getApiBase()}/login`, {
@@ -24,12 +25,7 @@ async function signup(username: string, password: string) {
   return res.json();
 }
 
-async function checkSession() {
-  const res = await fetch(`${getApiBase()}/session`, {
-    credentials: "include",
-  });
-  return res.json();
-}
+
 
 export default function AuthPage() {
   const [mode, setMode] = useState<"login" | "signup">("login");

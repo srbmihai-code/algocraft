@@ -22,7 +22,7 @@ numeFunctie();
 ## Funcții cu parametri
 
 Funcțiile pot primi valori din exterior, numite **parametri**.
-De asemenea, pot return o valoare înapoi.
+De asemenea, pot returna o valoare înapoi.
 
 ```javascript
 function aduna(a, b) {

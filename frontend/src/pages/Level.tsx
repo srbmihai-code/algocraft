@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import CodeMirror from "@uiw/react-codemirror";
 import { html } from "@codemirror/lang-html";
 import { css } from "@codemirror/lang-css";
 import { javascript } from "@codemirror/lang-javascript";
 import { lintGutter } from "@codemirror/lint";
 import { makeHtmlBlob } from "../utils/makeHtmlBlob";
-import MarkdownWithSpoilers from "../components/MarkdownWithSpoilers";
+import Markdown from "../components/Markdown";
 import levelsData from "../utils/levels.json";
 import type { TestResult, LevelFiles } from "../utils/types";
 import "./Level.css";
@@ -16,10 +16,10 @@ import setCookie from "../utils/setCookie";
 import getCookie from "../utils/getCookie";
 import runInputTest from "../utils/runInputTest";
 import syntaxLinter from "../utils/syntaxLinter";
+import { useNavigate } from "react-router-dom";
 
 export default function Level() {
   const { chapterName, levelURL } = useParams<{ chapterName: string; levelURL: string }>();
-  const navigate = useNavigate();
   const [files, setFiles] = useState<LevelFiles>({});
   const [htmlCode, setHtmlCode] = useState("");
   const [cssCode, setCssCode] = useState("");
@@ -37,7 +37,11 @@ export default function Level() {
   const [prevLevel, setPrevLevel] = useState<string | null>(null);
   const [nextLevel, setNextLevel] = useState<string | null>(null);
 
-  const iframeRef = useRef<HTMLIFrameElement>(null); // hidden test iframe
+  const [showSkipModal, setShowSkipModal] = useState(false);
+  const [skipLevelConfirmed, setSkipLevelConfirmed] = useState(getCookie("skipLevelConfirmation") === "true");
+  const navigate = useNavigate();
+
+  const iframeRef = useRef<HTMLIFrameElement>(null); // hidden iframe for tests
   const previewIframeRef = useRef<HTMLIFrameElement>(null); // visible preview iframe
   const debounceRef = useRef<number | null>(null);
 
@@ -48,6 +52,45 @@ export default function Level() {
     setPrevLevel(index > 0 ? chapter!.levels[index - 1].levelURL : null);
     setNextLevel(index < (chapter?.levels.length ?? 0) - 1 ? chapter!.levels[index + 1].levelURL : null);
   }, [chapterName, levelURL]);
+
+  // Check previous level completion for skip modal
+  useEffect(() => {
+    if (!prevLevel) return;
+    if (skipLevelConfirmed) return;
+
+    (async () => {
+      try {
+        const res = await fetch(`${getApiBase()}/completed-levels`, {
+          credentials: "include",
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          const completedLevels = data.levels.map((l: any) => l.level_name);
+          const prevCompleted = completedLevels.includes(prevLevel);
+
+          if (!prevCompleted) {
+            setShowSkipModal(true);
+          } else {
+            setShowSkipModal(false);
+          }
+        }
+      } catch {
+
+      }
+    })();
+  }, [prevLevel, chapterName]);
+
+
+  const confirmSkip = () => {
+    setCookie("skipLevelConfirmation", "true", 365);
+    setSkipLevelConfirmed(true);
+    setShowSkipModal(false);
+  };
+
+  const cancelSkip = () => {
+     navigate(-1);
+  };
 
   // Load files from cookie/server and user completion
   useEffect(() => {
@@ -75,7 +118,7 @@ export default function Level() {
         try {
           const res = await fetch(path);
           if (res.ok) return filterOutViteFiles(await res.text());
-        } catch {}
+        } catch { }
         return undefined;
       };
 
@@ -86,7 +129,7 @@ export default function Level() {
           if (parsed.html) newFiles.html = filterOutViteFiles(parsed.html);
           if (parsed.css) newFiles.css = filterOutViteFiles(parsed.css);
           if (parsed.js) newFiles.js = filterOutViteFiles(parsed.js);
-        } catch {}
+        } catch { }
       }
 
       const htmlText = await tryFetch(`${base}/index.html`);
@@ -125,7 +168,7 @@ export default function Level() {
             setIsCompleted(completedData.levels.some((l: any) => l.level_name === levelURL));
           }
         }
-      } catch {}
+      } catch { }
     };
 
     loadFiles();
@@ -204,7 +247,6 @@ export default function Level() {
 
     const iframe = iframeRef.current;
     if (iframe && TestFuncCode) {
-      // Reload hidden iframe to reset state before running test
       const blob = makeHtmlBlob(htmlCode, cssCode, jsCode, TestFuncCode);
       const url = URL.createObjectURL(blob);
       iframe.onload = () => {
@@ -234,12 +276,12 @@ export default function Level() {
 
   return (
     <div className="level-container">
-      {username && <p>Bine ai venit, {username}!</p>}
+      {username ? <p>Bine ai venit, {username}!</p> : <p> <Link to="/auth">Loghează-te</Link> pentru a-ți salva progresul</p>}
       {isCompleted && <span className="completed-label">Rezolvat ✔</span>}
 
       {files.instructions && (
         <div className="instructions">
-          <MarkdownWithSpoilers content={files.instructions} />
+          <Markdown content={files.instructions} />
         </div>
       )}
 
@@ -265,9 +307,19 @@ export default function Level() {
       )}
 
       <div className="level-buttons">
-        <button onClick={() => navigate("/levels")}>Niveluri</button>
-        {prevLevel && <button onClick={() => navigate(`/level/${chapterName}/${prevLevel}`)}>Nivelul precedent</button>}
-        {nextLevel && <button onClick={() => navigate(`/level/${chapterName}/${nextLevel}`)}>Nivelul următor</button>}
+        <Link to="/levels" className="btn">
+          Niveluri
+        </Link>
+        {prevLevel && (
+          <Link to={`/level/${chapterName}/${prevLevel}`} className="btn">
+            Nivelul precedent
+          </Link>
+        )}
+        {nextLevel && (
+          <Link to={`/level/${chapterName}/${nextLevel}`} className="btn">
+            Nivelul următor
+          </Link>
+        )}
       </div>
 
       {(TestFuncCode || InputTestFuncCode) ? (
@@ -297,6 +349,19 @@ export default function Level() {
         <div className="test-result">
           <h3>Rezultatul testului</h3>
           <pre className="wrap">{testResult.message}</pre>
+        </div>
+      )}
+
+      {showSkipModal && (
+        <div className="modal-overlay">
+          <div className="modal">
+            <h3>Nivelul precedent nu a fost completat</h3>
+            <p>Este recomandat să finalizezi nivelul anterior înainte de a trece mai departe.</p>
+            <div className="modal-buttons">
+              <button className="btn cancel" onClick={cancelSkip}>Înapoi</button>
+              <button className="btn confirm" onClick={confirmSkip}>Sari peste</button>
+            </div>
+          </div>
         </div>
       )}
     </div>

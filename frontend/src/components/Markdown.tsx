@@ -2,7 +2,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 
-export default function MarkdownWithSpoilers({ content }: { content: string }) {
+export default function Markdown({ content }: { content: string }) {
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
@@ -15,9 +15,24 @@ export default function MarkdownWithSpoilers({ content }: { content: string }) {
           }
           return <span className={className}>{children}</span>;
         },
+        code: ({ children }) => {
+          return (
+            <code
+              style={{
+                backgroundColor: "#f1f3f5",
+                borderRadius: "6px",
+                fontSize: "0.9em",
+                fontFamily: "monospace",
+              }}
+            >
+              {children}
+            </code>
+          );
+        },
       }}
     >
       {content}
     </ReactMarkdown>
+
   );
 }
