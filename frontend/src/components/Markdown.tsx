@@ -3,6 +3,9 @@ import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 
 export default function Markdown({ content }: { content: string }) {
+  const processedContent = content.replace(/@@(.*?)@@/gs, (_match, p1) => {
+    return `<span class="spoiler">${p1}</span>`;
+  });
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
@@ -31,7 +34,7 @@ export default function Markdown({ content }: { content: string }) {
         },
       }}
     >
-      {content}
+      {processedContent}
     </ReactMarkdown>
 
   );

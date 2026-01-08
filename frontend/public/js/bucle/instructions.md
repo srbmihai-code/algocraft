@@ -41,9 +41,9 @@ for (inițializare; condiție; pas) {
 }
 ```
 
-* **Inițializare**: se execută **o singură dată**, înainte de a începe bucla. De obicei definim variabila de control aici (`let i = 0`).
-* **Condiție**: se verifică înainte de fiecare iterație. Dacă devine `false`, bucla se oprește.
-* **Pas**: o instrucțiune repetată la finalul fiecărei iterații, aici modificăm variabila de control după fiecare iterație (`i++` sau `i += 2` etc).
+- **Inițializare**: se execută **o singură dată**, înainte de a începe bucla. De obicei definim variabila de control aici (`let i = 0`).
+- **Condiție**: se verifică înainte de fiecare iterație. Dacă devine `false`, bucla se oprește.
+- **Pas**: o instrucțiune repetată la finalul fiecărei iterații, aici modificăm variabila de control după fiecare iterație (`i++` sau `i += 2` etc).
 
 ### Exemplu
 

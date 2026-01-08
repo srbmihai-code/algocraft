@@ -23,8 +23,7 @@
       { "levelURL": "stilizare-text", "levelName": "Stilizare text", "language": "css" },
       { "levelURL": "box-model", "levelName": "Box model", "language": "css" },
       { "levelURL": "centrare-text", "levelName": "Centrare text", "language": "css" },
-      { "levelURL": "stilizare-buton", "levelName": "Stilizare buton", "language": "css" },
-      { "levelURL": "stilizare-input", "levelName": "Stilizare input", "language": "css" }
+      { "levelURL": "stilizare-buton", "levelName": "Stilizare buton", "language": "css" }
     ]
   },
 
@@ -53,5 +52,27 @@
     { "levelURL": "cautare-binara", "levelName": "Căutare binară", "language": "js" },
     { "levelURL": "baza-de-date", "levelName": "Mini-bază de date — căutare utilizatori", "language": "js", "isProject": true }
   ]
-}
+  },
+  {
+    "chapterURL": "liste",
+    "chapterName": "Structuri de date (listă simplă, stivă, coadă)",
+    "levels": [
+      { "levelURL": "lista-simpla", "levelName": "Listă simplă (linked list)", "language": "js" },
+      { "levelURL": "stiva", "levelName": "Stivă (stack)", "language": "js" },
+      { "levelURL": "stiva-construieste-tort", "levelName": "Stivă: Construiește un tort", "language": "js" },
+      { "levelURL": "coada", "levelName": "Coadă (queue)", "language": "js" },
+      { "levelURL": "coada-programator-sarcini", "levelName": "Queue: Programator de sarcini", "language": "js" }
+    ]
+  },
+  {
+    "chapterURL": "recursivitate",
+    "chapterName": "Recursivitate",
+    "levels": [
+      { "levelURL": "fibonacci", "levelName": "Recursivitate: Șirul lui Fibonacci", "language": "js" },
+      { "levelURL": "suma-recursiva", "levelName": "Sumă recursivă", "language": "js" },
+      { "levelURL": "quicksort", "levelName": "Algoritmul Quicksort", "language": "js" },
+      { "levelURL": "labirint-explorare", "levelName": "Explorarea labirintului", "language": "js" },
+      { "levelURL": "labirint-rezolvare", "levelName": "Rezolvarea unui labirint", "language": "js" }
+    ]
+  }
 ]

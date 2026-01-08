@@ -19,8 +19,8 @@ const student = {
 
 Asta înseamnă că:
 
-* se trimite o **copie**
-* valoarea originală **nu se modifică**
+- se trimite o **copie**
+- valoarea originală **nu se modifică**
 
 ```javascript
 function addOne(x) {
@@ -42,8 +42,8 @@ console.log(a); // 10
 
 Asta înseamnă că:
 
-* funcția primește **referința** către obiect
-* modificarea afectează obiectul original
+- funcția primește **referința** către obiect
+- modificarea afectează obiectul original
 
 ```javascript
 function changeName(student) {

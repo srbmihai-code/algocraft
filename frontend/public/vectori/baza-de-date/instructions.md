@@ -9,7 +9,7 @@ Tu **nu trebuie să îi modifici**, ci doar să testezi și să observi progresu
 
 Testează barele de progres pentru ambele căutări introducând diverse nume în input. Vezi cum avansează:
 
-* **Linear**: element cu element, încet
-* **Binary**: mult mai rapid
+- **Linear**: element cu element, încet
+- **Binary**: mult mai rapid
 
 Scopul este să vezi **diferența de viteză** dintre cele două metode.

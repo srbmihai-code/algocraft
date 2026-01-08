@@ -2,8 +2,8 @@
 
 Există două moduri de a insera un element:
 
-* La un anumit index cu sintaxa pe care o știi deja: `v[0] = 0`
-* Folosind `.push(valoare)` pentru a insera la coadă (după ultimul element) sau `.unshift(valoare)` pentru a insera în față (înainte de primul element)
+- La un anumit index cu sintaxa pe care o știi deja: `v[0] = 0`
+- Folosind `.push(valoare)` pentru a insera la coadă (după ultimul element) sau `.unshift(valoare)` pentru a insera în față (înainte de primul element)
 
 ## Exemplu
 
