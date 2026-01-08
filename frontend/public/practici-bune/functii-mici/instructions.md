@@ -1,0 +1,3 @@
+# Funcții mici
+
+### 🎯 Sarcină

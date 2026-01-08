@@ -74,5 +74,15 @@
       { "levelURL": "labirint-explorare", "levelName": "Explorarea labirintului", "language": "js" },
       { "levelURL": "labirint-rezolvare", "levelName": "Rezolvarea unui labirint", "language": "js" }
     ]
+  },
+  { "chapterURL": "practici-bune",
+    "chapterName": "Practici bune de programare",
+    "levels": [
+      { "levelURL": "nume-variabile", "levelName": "Numele variabilelor" },
+      { "levelURL": "functii-mici", "levelName": "Funcții mici" },
+      { "levelURL": "erori", "levelName": "Gestionarea erorilor" },
+      { "levelURL": "cod-curat", "levelName": "Cod curat" },
+      { "levelURL": "final", "levelName": "Sfârșit" }
+    ]
   }
 ]

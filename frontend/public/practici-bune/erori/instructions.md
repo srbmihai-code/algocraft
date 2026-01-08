@@ -1,0 +1,3 @@
+# Gestionarea erorilor
+
+### 🎯 Sarcină
