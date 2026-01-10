@@ -129,7 +129,7 @@ export function useLevelRunner({
       };
       iframe.src = url;
     } else if (InputTestFuncCode) {
-      const result = runInputTest(InputTestFuncCode, htmlCode);
+      const result = runInputTest(InputTestFuncCode, htmlCode || jsCode);
       setTestResult(result);
     } else {
       finishLevel();

@@ -78,11 +78,11 @@
   { "chapterURL": "practici-bune",
     "chapterName": "Practici bune de programare",
     "levels": [
-      { "levelURL": "nume-variabile", "levelName": "Numele variabilelor" },
-      { "levelURL": "functii-mici", "levelName": "Funcții mici" },
-      { "levelURL": "erori", "levelName": "Gestionarea erorilor" },
-      { "levelURL": "cod-curat", "levelName": "Cod curat" },
-      { "levelURL": "final", "levelName": "Sfârșit" }
+      { "levelURL": "cod-curat", "levelName": "Cod curat", "language": "js" },
+      { "levelURL": "nume-variabile", "levelName": "Numele variabilelor", "language": "js" },
+      { "levelURL": "functii-mici", "levelName": "Funcții mici", "language": "js" },
+      { "levelURL": "erori", "levelName": "Gestionarea erorilor", "language": "js" },
+      { "levelURL": "final", "levelName": "Sfârșit", "language": "js" }
     ]
   }
 ]
