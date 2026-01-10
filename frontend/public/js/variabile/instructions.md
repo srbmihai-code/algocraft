@@ -1,14 +1,36 @@
-# Ce este JavaScript si instructiuni de baza
-**JavaScript** este un limbaj de programare folosit cel mai des pentru a da functionalitati interactive site-urilor.
+# Ce este JavaScript și instrucțiuni de bază
 
-In acest limbaj, instructiunele se executa in ordine.
-Prima instructiune pe care o vei invata este declararea variabilelor, care sunt cutii in care putem pune date, de exemplu numere, siruri de caractere, etc.
+**JavaScript** este un limbaj de programare folosit cel mai des pentru a da funcționalități interactive site-urilor.
 
-Declararea unei variabile se poate face ori cu instructiunea `let `(care declara o variabila care isi poate schimba valoarea) sau `const` care declara o constanta.
-**Sintaxa** pentru a da initializa variabila este `let variabila;`
-Pentru a o **schimba**, folosim `=`: `variabila = 0;`.
-De asemenea, le putem combina in `let variabila = 0;`
-Pentru a initializa un sir de caractere (string) `let sir = "Hello World";`
+În acest limbaj, instrucțiunile se execută în ordine.  
+Prima instrucțiune pe care o vei învăța este declararea variabilelor, care sunt cutii în care putem pune date, de exemplu numere, șiruri de caractere etc.
+
+Declararea unei variabile se poate face ori cu instrucțiunea `let` (care declară o variabilă care își poate schimba valoarea) sau `const` care declară o constantă.  
+
+**Sintaxa** pentru a inițializa o variabilă este:  
+```js
+let variabila;
+````
+
+Pentru a o **schimba**, folosim `=`:
+
+```js
+variabila = 0;
+```
+
+De asemenea, le putem combina:
+
+```js
+let variabila = 0;
+```
+
+Pentru a inițializa un șir de caractere (string):
+
+```js
+let sir = "Hello World";
+```
 
 ### 🎯 Sarcină
-Schimba valoarea lui x in `"Hello World"`.
+
+Schimbă valoarea lui `x` în `"Hello World"`.
+

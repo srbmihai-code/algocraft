@@ -22,7 +22,6 @@ function gasestePatrat(index) {
 
 // Funcție pentru căutare binară
 function binarySearch(vector, valoare) {
-function binarySearch(vector, valoare) {
   let low = 0;
   let high = vector.length - 1;
 
@@ -36,16 +35,15 @@ function binarySearch(vector, valoare) {
     if (element < valoare) {
       low = mid + 1;
     }
-    // TODO: verifica daca elementul este mai mare decat valoarea si seteaza high la mijloc minus 1
+    // verifica daca elementul este mai mare decat valoarea si seteaza high la mijloc minus 1
   }
 
   return -1;
 }
-}
 
 // Funcția apelată la click pe buton
-function cauta() {
-  const input = document.getElementById("numarInput");
+function gaseste() {
+  const input = document.getElementById("numar-input");
   const valoare = parseInt(input.value);
 
   const index = binarySearch(vector, valoare);

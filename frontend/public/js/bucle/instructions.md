@@ -1,4 +1,6 @@
-# Bucla while în JavaScript
+# Bucle în JavaScript
+
+## Bucla `while`
 
 În **JavaScript**, buclele ne permit să repetăm codul cât timp o condiție este adevărată.
 
@@ -12,7 +14,7 @@ while (condiție) {
 }
 ```
 
-Condiția se verifică **la începutul fiecărei iteratii**.
+Condiția se verifică **la începutul fiecărei iterații**.
 Dacă condiția este falsă de la început, bucla nu se execută deloc.
 
 ### Exemplu
@@ -27,7 +29,7 @@ while (i < 5) { // condiție
 
 ---
 
-# Bucla `for` în JavaScript
+## Bucla `for`
 
 Buclele `for` sunt utile când știm **de câte ori vrem să repetăm codul**.
 

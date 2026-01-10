@@ -19,6 +19,6 @@ Funcția trebuie să:
 - returneze `0` pentru un vector gol
 - returneze suma corectă pentru orice vector de numere
 - nu folosească bucle (`for`, `while`)
-Folosește `numere.slice(1)` pentru a primi restul vectorului (fără primul element).
+Folosește `numere.slice(1)` pentru a apela funcția cu restul vectorului (fără primul element).
 
 Sfat: @@Poți vedea dacă vectorul este gol cu `numere.length`@@

@@ -7,6 +7,6 @@ function runTest() {
   if (sum === expected) {
     return { pass: true, message: `✅ Corect! Suma numerelor pare de la 1 la 1000 este ${sum}.` };
   } else {
-    return { pass: false, message: `❌ Greșit. Suma corectă trebuia să fie ${expected}, dar sum este ${sum}.` };
+    return { pass: false, message: `❌ Suma nu a fost calculă corect.` };
   }
 }

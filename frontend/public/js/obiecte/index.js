@@ -4,14 +4,13 @@ const student = {
   age: 19
 };
 
-// TODO: Creează o funcție care primește un obiect student
-// și crește vârsta cu 1
-function increaseAge(/* parametru */) {
+function increaseAge(s) {
   // TODO
+  
 }
 
-// TODO: Apelează funcția
+// Apelează funcția
 increaseAge(student);
 
-// TODO: Afișează student.age cu console.log(), pentru a-ți vedea rezultatul în consolă când apeși pe „Rulează testul”
+// Afișează student.age cu console.log(), pentru a-ți vedea rezultatul în consolă când apeși pe „Rulează testul”
 

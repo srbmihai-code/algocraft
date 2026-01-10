@@ -15,8 +15,8 @@ function runTest() {
     errorCaught = true;
   }
 
-  const ultimaDiv = document.body.lastElementChild;
-  if (!ultimaDiv || !ultimaDiv.textContent.toLowerCase().includes("eroare")) {
+  const div = document.body.lastElementChild;
+  if (!div || !div.textContent.toLowerCase().includes("eroare")) {
     return {
       pass: false,
       message: "❌ Funcția `calculeazaMedie` nu afișează eroarea în DOM corespunzător."

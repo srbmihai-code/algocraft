@@ -19,6 +19,6 @@ function runTest() {
   if (newValue === initialValue + 1) {
     return { pass: true, message: `✅ Corect! Valoarea a crescut de la ${initialValue} la ${newValue}.` };
   } else {
-    return { pass: false, message: `❌ Greșit. Valoarea trebuia să fie ${initialValue + 1}, dar este ${newValue}.` };
+    return { pass: false, message: `❌ Valoarea după apăsare trebuia să fie ${initialValue + 1}, dar este ${newValue}.` };
   }
 }

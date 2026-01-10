@@ -1,6 +1,6 @@
 # Obiecte în JavaScript
 
-#### Ce este un obiect
+## Ce este un obiect
 
 Un **object** este o structură de date care conține **proprietăți**.
 
@@ -13,7 +13,7 @@ const student = {
 
 ---
 
-#### Pass by Value
+## Pass by Value
 
 **Primitivele** (`number`, `string`, `boolean`) sunt transmise prin valoarea lor (**by value**).
 
@@ -36,7 +36,7 @@ console.log(a); // 10
 `a` rămâne neschimbat.
 
 
-#### Pass by Reference
+## Pass by Reference
 
 **Obiectele** sunt transmise printr-o referință (**by reference**).
 

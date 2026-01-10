@@ -1,6 +1,6 @@
 # Căutare liniară
 
-Un lucru frecvent în programare este să verificăm dacă un element există într-o **listă (array)**.
+Un lucru frecvent în programare este să verificăm dacă un element există într-un **vector (array)**.
 O metodă simplă este **căutarea liniară**, care constă în a verifica fiecare element până găsim elementul dorit.
 Când găsești elementul, se folosește instrucțiunea `break`, care termină bucla `for` și cautarea în sine.
 

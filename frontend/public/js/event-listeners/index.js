@@ -1,5 +1,5 @@
-// TODO: selectează butonul
-// TODO: selectează elementul p
+// selectează butonul
+// selectează elementul p
 
-// TODO: adaugă event listener pe buton
+// adaugă event listener pe buton
 // La click, crește valoarea din p cu 1

@@ -36,7 +36,7 @@ Instrucțiunea `return` trimite o valoare înapoi și oprește execuția funcți
 
 ---
 
-# Funcția `console.log()`
+## Funcția `console.log()`
 
 `console.log()` este **o funcție deja creată în JavaScript**.
 Ea primește valori ca parametri și le afișează în consolă, pe care o poți deschide cu `Ctrl + Shift + I` sau `Cmd (⌘) + Option (⌥) + I`.
@@ -48,7 +48,7 @@ console.log(10);
 console.log(true);
 ```
 
-Funcția `console.log()` **nu returnează nimic** , este folosită pentru **afișare și debug**, adică pentru a vedea cum ne funcționează programul dacă vrem să vedem unde se întâmpla o eroare.
+Funcția `console.log()` **nu returnează nimic** , este folosită pentru **afișare și debug**, adică pentru a vedea cum ne funcționează programul dacă vrem să vedem unde se întâmplă o eroare.
 
 
 ## 🎯 Sarcină

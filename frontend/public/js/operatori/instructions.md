@@ -4,7 +4,7 @@
 
 ### Operatorii matematici
 
-Aceștia se folosesc pe **numere**:
+Aceștia se folosesc cu **numere**:
 
 | Operator | Ce face            |
 | -------- | ------------------ |
@@ -16,6 +16,8 @@ Aceștia se folosesc pe **numere**:
 | `**`     | Ridicare la putere |
 
 **Exemple**:
+
+(Comentariile se notează cu `//` în JavaScript)
 
 ```javascript
 let a = 10;

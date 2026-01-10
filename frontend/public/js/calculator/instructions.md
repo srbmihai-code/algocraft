@@ -13,7 +13,7 @@ Poți să te întorci la capitolele trecute pentru ajutor la fiecare concept.
 
 ## Cum funcționează proiectul
 
-- Există **un singur input*- pentru numere
+- Există **un singur input** pentru numere
 - După ce se introduce un numar și o operație, input-ul se golește și rezultatul se actualizează
 - Poți introduce un alt număr și continua operațiile (`+`, `-`, `*`, `/`)
 - Rezultatul se afișează într-un text mare
@@ -23,8 +23,8 @@ Poți să te întorci la capitolele trecute pentru ajutor la fiecare concept.
 
 ## 🎯 Sarcină
 
-- Creează un input pentru număr cu clasa `input-numere `, (ai deja niște stiluri gata făcute)
-- Creează 4 butoane pentru operații: `+`, `-`, `*`, `/`
+- Creează un input pentru număr cu clasa `input-numere`, (ai deja niște stiluri gata făcute)
+- Creează 4 butoane pentru operații: `+`, `-`, `*`, `/` (în aceasă ordine)
 - La apăsarea unui buton se:
   - preia valoarea din input
   - efectuează operația cu rezultatul curent

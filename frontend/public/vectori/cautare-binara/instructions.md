@@ -1,6 +1,6 @@
 # Căutarea binară
 
-Căutarea binară este o metodă eficientă pentru a găsi un element într-o listă sortată.
+Căutarea binară este o metodă eficientă pentru a găsi un element într-un vector sortat.
 
 Cum funcționează:
 
@@ -16,3 +16,5 @@ Astfel, mărimea vectorului pe care trebuie să îl verificăm se înjumătățe
 ### 🎯 Sarcină
 
 Completează codul de căutare binară.
+
+Notă: dacă rulezi testul fără sa completezi codul fereastra se va bloca din cauza buclei `while` care merge la infinit.

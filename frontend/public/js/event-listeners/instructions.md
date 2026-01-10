@@ -1,4 +1,4 @@
-# Event Listeners în JavaScript
+# „Event Listeners” în JavaScript
 
 Un event listener permite JavaScript-ului să reacționeze la acțiunile utilizatorului (click, tastatură, mouse etc.).
 

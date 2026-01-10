@@ -6,7 +6,7 @@ QuickSort este un algoritm de sortare care folosește **recursivitatea** pentru 
 ## Cum funcționează
 
 1. **Alege un pivot** – alege un element din vector ca pivot.
-2. **Împarte vectorul** – creează două sub-vectoruri: mai mici și mai mari decât pivotul.
+2. **Împarte vectorul** – creează două sub-vectoruri unul cu numere mai mici și mai mari decât pivotul.
 3. **Sortarea recursivă** – aplică QuickSort recursiv pe fiecare sub-vector.
 4. **Combinarea rezultatelor** – unește sub-vectorurile sortate cu pivotul.
 

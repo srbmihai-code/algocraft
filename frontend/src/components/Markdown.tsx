@@ -20,14 +20,7 @@ export default function Markdown({ content }: { content: string }) {
         },
         code: ({ children }) => {
           return (
-            <code
-              style={{
-                backgroundColor: "#f1f3f5",
-                borderRadius: "6px",
-                fontSize: "0.9em",
-                fontFamily: "monospace",
-              }}
-            >
+            <code className="cod">
               {children}
             </code>
           );
