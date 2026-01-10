@@ -39,7 +39,7 @@
       { "levelURL": "obiecte", "levelName": "Obiecte și acces proprietăți", "language": "js" },
       { "levelURL": "dom", "levelName": "Manipulare DOM", "language": "js" },
       { "levelURL": "event-listeners", "levelName": "Event listeners și update DOM", "language": "js" },
-      { "levelURL": "calculator", "levelName": "Mini-proiect — Calculator", "language": "js", "isProject": true }      
+      { "levelURL": "calculator", "levelName": "Mini-proiect: Calculator", "language": "js", "isProject": true }      
     ]
   },
   {
@@ -50,7 +50,7 @@
     { "levelURL": "adaugare-element", "levelName": "Adăugare elemente în vector", "language": "js" },
     { "levelURL": "cautare-liniara", "levelName": "Căutare liniară", "language": "js" },
     { "levelURL": "cautare-binara", "levelName": "Căutare binară", "language": "js" },
-    { "levelURL": "baza-de-date", "levelName": "Mini-bază de date — căutare utilizatori", "language": "js", "isProject": true }
+    { "levelURL": "baza-de-date", "levelName": "Mini-bază de date: căutare utilizatori", "language": "js", "isProject": true }
   ]
   },
   {

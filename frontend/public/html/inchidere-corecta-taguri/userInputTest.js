@@ -1,5 +1,5 @@
 function runTest(html) {
-  const h1Pattern = /<h1>\s*Bine ai venit la site-ul meu\s*<\/h1>/i;
+  const h1Pattern = /<h1>\s*Hello World\s*<\/h1>/i;
   const h2Pattern = /<h2>\s*Acesta este site-ul meu\s*<\/h2>/i;
   const h3Pattern = /<h3>\s*Acesta este un subtitlu\s*<\/h3>/i;
   console.log(html, h1Pattern.test(html))

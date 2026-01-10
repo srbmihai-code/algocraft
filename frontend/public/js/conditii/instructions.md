@@ -24,14 +24,14 @@ Ca să formăm condițiile, folosim **operatori logici**, care compară valori.
 | -------- | --------------------------------------------------------------- | ----------------------------------------- |
 | `===`    | Egalitate strictă (compara valoarea **și** tipul)               | `5 === 5` → `true`; `"5" === 5` → `false` |
 | `!==`    | Diferit strict (valoare sau tip diferit)                        | `"a" !== "b"` → `true`                    |
-| `==`     | Egalitate (se pot compara tipuri diferite) — *nerecomandat*     | `"5" == 5` → `true`                       |
-| `!=`     | Diferit (se pot compara tipuri diferite) — *nerecomandat*       | `"5" != 6` → `true`                       |
+| `==`     | Egalitate (se pot compara tipuri diferite): *nerecomandat*     | `"5" == 5` → `true`                       |
+| `!=`     | Diferit (se pot compara tipuri diferite): *nerecomandat*       | `"5" != 6` → `true`                       |
 | `>`      | Mai mare decât                                                  | `x > 10`                                  |
 | `<`      | Mai mic decât                                                   | `x < 0`                                   |
 | `>=`     | Mai mare sau egal                                               | `score >= 50`                             |
 | `<=`     | Mai mic sau egal                                                | `age <= 18`                               |
-| `&&`     | Și logic — ambele condiții trebuie să fie adevărate             | `x > 0 && x < 10`                         |
-| `\|\|`   | Sau logic — cel puțin una din condiții trebuie să fie adevărată | `color === "red" \|\| color === "blue"`   |
+| `&&`     | Și logic: ambele condiții trebuie să fie adevărate             | `x > 0 && x < 10`                         |
+| `\|\|`   | Sau logic: cel puțin una din condiții trebuie să fie adevărată | `color === "red" \|\| color === "blue"`   |
 | `!`      | Negare (inversează valoarea booleană)                           | `!isLoggedIn`                             |
 
 

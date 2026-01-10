@@ -7,8 +7,8 @@ function runTest() {
 
   const text = p.textContent?.trim() || '';
   if (text.length > 0) {
-    return { pass: true, message: '✅ Corect! Paragraful <p> conține text descriptiv.' };
+    return { pass: true, message: '✅ Corect! Paragraful <p> conține text.' };
   } else {
-    return { pass: false, message: '❌ Paragraful <p> este gol. Trebuia să conțină text descriptiv.' };
+    return { pass: false, message: '❌ Paragraful <p> este gol. Trebuia să conțină text.' };
   }
 }

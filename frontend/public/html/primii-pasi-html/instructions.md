@@ -15,4 +15,6 @@ HTML folosește tag-uri („etichete”) pentru a organiza conținutul. Să luă
 Browserul citește aceste tag-uri și afișează textul în pagină. În previzualizare poți vedea imediat cum textul apare și cum se schimbă atunci când editezi codul.
 
 ### 🎯 Sarcină
-Schimbă textul din **Hello** în **Hello World**.
+Schimbă textul din **Hello** în **Hello World** și rulează testul pentru a vedea rezultatul.
+
+Dacă este eroare sau ceva nu a fost implementat corect, testul îți va zice unde ai greșit.

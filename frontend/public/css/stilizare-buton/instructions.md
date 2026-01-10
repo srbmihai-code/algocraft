@@ -1,4 +1,4 @@
-# 🎨 Stilizarea input-ului și a butonului
+# Stilizarea input-ului și a butonului
 
 Pentru a avea o interfață coerentă, elementele de tip **input** și **button** trebuie să aibă un stil de bază similar: spațiere interioară, chenar vizibil și colțuri rotunjite.
 

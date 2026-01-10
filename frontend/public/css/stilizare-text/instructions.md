@@ -10,4 +10,4 @@ Textul poate fi editat in CSS cu urmatorele proprietati:
 
 ### 🎯 Sarcină
 
-Schimbă fontul titlului `h1` și a pragrafului `p` în ***Arial** și culoarea paragrafului în `#4b3621` pentru a crește lizibilitatea.
+Schimbă fontul titlului `h1` și a pragrafului `p` în **Arial** și culoarea paragrafului în `#4b3621` pentru a crește lizibilitatea.
