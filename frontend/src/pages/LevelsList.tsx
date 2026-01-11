@@ -23,27 +23,47 @@ export default function LevelsList() {
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [completedLevels, setCompletedLevels] = useState<string[]>([]);
   const [username, setUsername] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     setChapters(levelsData as Chapter[]);
+
     const fetchUserData = async () => {
       try {
         const userRes = await fetch(`${getApiBase()}/me`, {
           credentials: "include",
         });
-        if (userRes.ok) {
-          const userData = await userRes.json();
-          if (userData.success) setUsername(userData.username);
 
-          const levelsRes = await fetch(`${getApiBase()}/completed-levels`, {
-            credentials: "include",
-          });
-          if (levelsRes.ok) {
-            const levelsData = await levelsRes.json();
-            if (levelsData.success)
-              setCompletedLevels(levelsData.levels.map((l: any) => l.level_name));
+        if (!userRes.ok) {
+          setLoading(false);
+          return;
+        }
+
+        const userData = await userRes.json();
+        console.log("ME RESPONSE:", userData);
+
+        if (userData.success) {
+          setUsername(userData.username);
+
+          const isAdminFromServer = !!userData.isAdmin;
+          setIsAdmin(isAdminFromServer);
+
+          if (!isAdminFromServer) {
+            const levelsRes = await fetch(
+                `${getApiBase()}/completed-levels`,
+                { credentials: "include" }
+            );
+
+            if (levelsRes.ok) {
+              const levelsData = await levelsRes.json();
+              if (levelsData.success) {
+                setCompletedLevels(
+                    levelsData.levels.map((l: any) => l.level_name)
+                );
+              }
+            }
           }
         }
       } catch (err) {
@@ -52,8 +72,10 @@ export default function LevelsList() {
         setLoading(false);
       }
     };
+
     fetchUserData();
   }, []);
+
 
   const getIcon = (language: Level["language"]) => {
     switch (language) {
@@ -74,11 +96,14 @@ export default function LevelsList() {
         method: "POST",
         credentials: "include",
       });
+
       document.cookie.split(";").forEach((cookie) => {
         const name = cookie.split("=")[0].trim();
         document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
       });
+
       setUsername(null);
+      setIsAdmin(false);
       setCompletedLevels([]);
       navigate("/auth");
     } catch (err) {
@@ -89,43 +114,67 @@ export default function LevelsList() {
   if (loading) return <p>Loading...</p>;
 
   return (
-    <div className="levels-container">
-      <h2>Lista Niveluri</h2>
-      {username ? (
-        <div className="user-info">
-          <p>Bine ai venit, {username}!</p>
-          <button onClick={handleLogout}>Logout</button>
-        </div>
-      ) : (
-        <button onClick={() => navigate("/auth")}>Autentificare / Creare cont</button>
-      )}
+      <div className="levels-container">
+        <h2>Lista Niveluri</h2>
 
-      {chapters.map((chapter, chapterIndex) => (
-        <div key={chapterIndex} className="chapter">
-          <h3 className="chapter-name">{chapter.chapterName}</h3>
-          <ul className="levels-list">
-            {chapter.levels.map((level, index) => {
-              const isCompleted = completedLevels.includes(level.levelURL);
-              return (
-                <li
-                  key={index}
-                  className={`level-item ${level.language} ${isCompleted ? "completed" : ""}`}
-                >
-                  <Link
-                    to={`/level/${encodeURIComponent(chapter.chapterURL)}/${encodeURIComponent(level.levelURL)}`}
-                    className="level-link"
-                  >
-                    <img src={getIcon(level.language)} alt={level.language} className="level-icon" />
-                    <span className="level-name">{level.levelName}</span>
-                    <span className="level-language">{level.language.toUpperCase()}</span>
-                    {isCompleted && <span className="level-status">✔</span>}
+        {username ? (
+            <div className="user-info">
+              <p>Bine ai venit, {username}!</p>
+
+              {isAdmin && (
+                  <Link to="/admin/questions" className="admin-link">
+                    Admin – Întrebări
                   </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      ))}
-    </div>
+              )}
+
+              <button onClick={handleLogout}>Logout</button>
+            </div>
+        ) : (
+            <button onClick={() => navigate("/auth")}>
+              Autentificare / Creare cont
+            </button>
+        )}
+
+        {chapters.map((chapter, chapterIndex) => (
+            <div key={chapterIndex} className="chapter">
+              <h3 className="chapter-name">{chapter.chapterName}</h3>
+
+              <ul className="levels-list">
+                {chapter.levels.map((level, index) => {
+                  const isCompleted = completedLevels.includes(level.levelURL);
+
+                  return (
+                      <li
+                          key={index}
+                          className={`level-item ${level.language} ${
+                              isCompleted ? "completed" : ""
+                          }`}
+                      >
+                        <Link
+                            to={`/level/${encodeURIComponent(
+                                chapter.chapterURL
+                            )}/${encodeURIComponent(level.levelURL)}`}
+                            className="level-link"
+                        >
+                          <img
+                              src={getIcon(level.language)}
+                              alt={level.language}
+                              className="level-icon"
+                          />
+                          <span className="level-name">{level.levelName}</span>
+                          <span className="level-language">
+                      {level.language.toUpperCase()}
+                    </span>
+                          {isCompleted && (
+                              <span className="level-status">✔</span>
+                          )}
+                        </Link>
+                      </li>
+                  );
+                })}
+              </ul>
+            </div>
+        ))}
+      </div>
   );
 }

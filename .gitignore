@@ -23,5 +23,6 @@ users.db
 *.njsproj
 *.sln
 *.sw?
+.env
 
 generator.js

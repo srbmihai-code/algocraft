@@ -5,13 +5,28 @@ import { usePrevNextLevel } from "../hooks/usePrevNextLevel";
 import { useLevelFiles } from "../hooks/useLevelfFiles";
 import { useUserCompletion } from "../hooks/useUserCompletion";
 import { useSkipLevelModal } from "../hooks/useSkipLevelModal";
-import { useLevelRunner } from "../hooks/useLevelRunner"
+import { useLevelRunner } from "../hooks/useLevelRunner";
 import { LevelHeader } from "../components/LevelHeader";
 import { EditorSection } from "../components/EditorSection";
 import { LevelNavigation } from "../components/LevelNavigation";
 import { SkipLevelModal } from "../components/SkipLevelModal";
 
 import "./Level.css";
+import { getApiBase } from "../utils/apiBase";
+
+type Question = {
+  id: number;
+  chapter_name: string;
+  level_name: string;
+  question: string;
+  html_code: string | null;
+  css_code: string | null;
+  js_code: string | null;
+  created_at: string;
+  answer?: string | null;
+  answered_at?: string | null;
+  admin_name?: string | null;
+};
 
 export default function Level() {
   const { chapterName, levelURL } = useParams<{ chapterName: string; levelURL: string }>();
@@ -20,6 +35,11 @@ export default function Level() {
   const [jsCode, setJsCode] = useState("");
   const [TestFuncCode, setTestFuncCode] = useState<string | null>(null);
   const [InputTestFuncCode, setInputTestFuncCode] = useState<string | null>(null);
+
+  const [question, setQuestion] = useState("");
+  const [questionMessage, setQuestionMessage] = useState("");
+  const [questionError, setQuestionError] = useState("");
+  const [questions, setQuestions] = useState<Question[]>([]);
 
   const { prevLevel, nextLevel } = usePrevNextLevel(chapterName, levelURL);
   const navigate = useNavigate();
@@ -40,7 +60,6 @@ export default function Level() {
   }, [files]);
 
   const { showSkipModal, confirmSkip } = useSkipLevelModal(prevLevel);
-
   const cancelSkip = () => navigate(-1);
 
   const {
@@ -63,6 +82,62 @@ export default function Level() {
     isCompleted,
     setIsCompleted
   });
+
+  // Fetch user's questions for this level
+  const fetchQuestions = async () => {
+    try {
+      const res = await fetch(
+        `${getApiBase()}/questions?chapterName=${encodeURIComponent(chapterName!)}&levelName=${encodeURIComponent(levelURL!)}`,
+        { credentials: "include" }
+      );
+      const data = await res.json();
+      if (data.success) setQuestions(data.questions);
+    } catch (err) {
+      console.error("Failed to fetch questions", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchQuestions();
+  }, [chapterName, levelURL]);
+
+  // Submit a new question
+  const submitQuestion = async () => {
+    setQuestionError("");
+    setQuestionMessage("");
+
+    if (!question.trim()) {
+      setQuestionError("Întrebarea nu poate fi goală.");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${getApiBase()}/questions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          chapterName,
+          levelName: levelURL,
+          question,
+          htmlCode,
+          cssCode,
+          jsCode,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setQuestionMessage("Întrebarea a fost trimisă cu succes.");
+        setQuestion("");
+        fetchQuestions(); // Refresh questions after submitting
+      } else {
+        setQuestionError(data.message || "Eroare la trimiterea întrebării.");
+      }
+    } catch (err) {
+      console.error(err);
+      setQuestionError("Eroare la trimiterea întrebării.");
+    }
+  };
 
   return (
     <div className="level-container">
@@ -92,7 +167,6 @@ export default function Level() {
       )}
 
       <iframe ref={previewIframeRef} className={`preview ${!htmlCode && "hidden"}`} sandbox="allow-scripts" title="Previzualizare" src="about:blank" />
-
       <iframe ref={iframeRef} className="hidden-iframe" sandbox="allow-scripts" title="Test Runner" src="about:blank" />
 
       {hasRunTest && runtimeError && (
@@ -106,6 +180,39 @@ export default function Level() {
         <div className="test-result">
           <h3>Rezultatul testului</h3>
           <pre className="wrap">{testResult.message}</pre>
+        </div>
+      )}
+
+      {/* Question form */}
+      <div className="question-form">
+        <h3>Ai o întrebare pentru acest nivel?</h3>
+        <textarea
+          placeholder="Scrie întrebarea ta aici..."
+          value={question}
+          onChange={(e) => setQuestion(e.target.value)}
+          rows={4}
+          style={{ width: "100%", marginBottom: 8 }}
+        />
+        {questionError && <p className="error">{questionError}</p>}
+        {questionMessage && <p className="message">{questionMessage}</p>}
+        <button onClick={submitQuestion}>Trimite întrebarea</button>
+      </div>
+
+      {/* User's questions with answers */}
+      {questions.length > 0 && (
+        <div className="user-questions">
+          <h3>Întrebările tale pentru acest nivel</h3>
+          {questions.map((q) => (
+            <div key={q.id} className="question-item">
+              <strong>Întrebare:</strong> {q.question}
+              <strong>Cod HTML:</strong> <pre>{q.html_code}</pre>
+              <strong>Cod CSS:</strong> <pre>{q.css_code}</pre>
+              <strong>Cod JS:</strong> <pre>{q.js_code}</pre>
+              {q.answer && (
+                <p><strong>Răspuns admin ({q.admin_name}):</strong> {q.answer}</p>
+              )}
+            </div>
+          ))}
         </div>
       )}
 
