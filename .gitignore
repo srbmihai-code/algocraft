@@ -26,3 +26,6 @@ users.db
 .env
 
 generator.js
+qodana.yaml
+/package.json
+/package-lock.json.json

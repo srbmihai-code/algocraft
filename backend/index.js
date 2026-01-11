@@ -5,7 +5,7 @@ const cors = require("cors");
 const session = require("express-session");
 const cookieParser = require("cookie-parser");
 const db = require("./db");
-require("dotenv").config();
+require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 const app = express();
 const port = process.env.PORT || 3001;
 console.log(process.env.ADMIN_PASSWORD)
