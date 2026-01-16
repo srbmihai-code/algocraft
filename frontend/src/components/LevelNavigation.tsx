@@ -1,24 +1,23 @@
 import { Link } from "react-router-dom";
 
 interface NavProps {
-  chapterName?: string;
-  prevLevel: string | null;
-  nextLevel: string | null;
+  prevLevel: { chapterURL: string; levelURL: string } | null;
+  nextLevel: { chapterURL: string; levelURL: string } | null;
 }
 
-export function LevelNavigation({ chapterName, prevLevel, nextLevel }: NavProps) {
+export function LevelNavigation({ prevLevel, nextLevel }: NavProps) {
   return (
     <div className="level-buttons">
       <Link to="/levels" className="btn">Niveluri</Link>
 
       {prevLevel && (
-        <Link to={`/level/${chapterName}/${prevLevel}`} className="btn">
+        <Link to={`/level/${prevLevel.chapterURL}/${prevLevel.levelURL}`} className="btn">
           Nivelul precedent
         </Link>
       )}
 
       {nextLevel && (
-        <Link to={`/level/${chapterName}/${nextLevel}`} className="btn">
+        <Link to={`/level/${nextLevel.chapterURL}/${nextLevel.levelURL}`} className="btn">
           Nivelul următor
         </Link>
       )}

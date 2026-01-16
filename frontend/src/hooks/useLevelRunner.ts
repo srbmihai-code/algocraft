@@ -37,6 +37,12 @@ export function useLevelRunner({
   const [runtimeErrorLive, setRuntimeErrorLive] = useState<{ message: string; line: number | null } | null>(null);
   const [testResult, setTestResult] = useState<TestResult | null>(null);
   const [hasRunTest, setHasRunTest] = useState(false);
+  useEffect(() => {
+    setTestResult(null);
+    setHasRunTest(false);
+    setRuntimeError(null);
+    setRuntimeErrorLive(null);
+  }, [chapterName, levelURL]);
 
   // Update iframes & cookies on code change
   useEffect(() => {

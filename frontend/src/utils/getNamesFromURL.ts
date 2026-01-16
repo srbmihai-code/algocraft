@@ -5,7 +5,7 @@ interface Names {
   levelName?: string;
 }
 
-export default function getNamesFromURLs(
+export default function getNamesFromURL(
   chapterURL?: string,
   levelURL?: string
 ): Names {

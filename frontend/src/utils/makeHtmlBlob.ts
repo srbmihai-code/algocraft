@@ -11,9 +11,15 @@ export function makeHtmlBlob(
 <html>
   <head>
     <meta charset="UTF-8" />
-    <style>${cssCode}</style>
+    <style>${cssCode}
+    body {
+    font-size: 1.4em;
+    }
+    </style>
+    
 
-    <script>${bootstrapScript}</script>
+    <script>${bootstrapScript}
+    </script>
 
 
 

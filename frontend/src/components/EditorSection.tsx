@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { CodeEditor } from "./CodeEditor";
 
 interface EditorSectionProps {
@@ -7,6 +8,8 @@ interface EditorSectionProps {
   setHtmlCode: (value: string) => void;
   setCssCode: (value: string) => void;
   setJsCode: (value: string) => void;
+  onRun: () => void;
+  runLabel: string;
 }
 
 export function EditorSection({
@@ -16,32 +19,54 @@ export function EditorSection({
   setHtmlCode,
   setCssCode,
   setJsCode,
+  onRun,
+  runLabel,
 }: EditorSectionProps) {
+  const tabs = [
+    { label: "index.html", value: "html", code: htmlCode, setter: setHtmlCode },
+    { label: "style.css", value: "css", code: cssCode, setter: setCssCode },
+    { label: "index.js", value: "js", code: jsCode, setter: setJsCode },
+  ].filter(tab => tab.code !== undefined);
+
+  const [activeTab, setActiveTab] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (jsCode !== undefined) setActiveTab("js");
+    else if (cssCode !== undefined) setActiveTab("css");
+    else if (htmlCode !== undefined) setActiveTab("html");
+  }, [htmlCode, cssCode, jsCode]);
+
+  const currentTab = tabs.find(tab => tab.value === activeTab);
+
+  if (!currentTab) return null;
+
   return (
-    <>
-      {htmlCode !== undefined && (
-        <CodeEditor
-          title="HTML"
-          value={htmlCode}
-          onChange={setHtmlCode}
-        />
-      )}
+    <div className="editor-shell">
+      <div className="editor-tabs">
+        {tabs.map(tab => (
+          <button
+            key={tab.value}
+            className={`tab-btn ${tab.value === activeTab ? "active" : ""}`}
+            onClick={() => setActiveTab(tab.value)}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
-      {cssCode !== undefined && (
+      <div className="editor-content">
         <CodeEditor
-          title="CSS"
-          value={cssCode}
-          onChange={setCssCode}
+          title={currentTab.label}
+          value={currentTab.code!}
+          onChange={currentTab.setter}
         />
-      )}
+      </div>
 
-      {jsCode !== undefined && (
-        <CodeEditor
-          title="JS"
-          value={jsCode}
-          onChange={setJsCode}
-        />
-      )}
-    </>
+      <div className="editor-footer">
+        <button className="editor-run-btn" onClick={onRun}>
+          {runLabel}
+        </button>
+      </div>
+    </div>
   );
 }

@@ -4,31 +4,30 @@ import { css } from "@codemirror/lang-css";
 import { javascript } from "@codemirror/lang-javascript";
 import { lintGutter } from "@codemirror/lint";
 import syntaxLinter from "../utils/syntaxLinter";
+
 interface CodeEditorProps {
   title: string;
   value: string;
   onChange: (value: string) => void;
 }
 
-export function CodeEditor({
-  title,
-  value,
-  onChange,
-}: CodeEditorProps) {
+export function CodeEditor({ title, value, onChange }: CodeEditorProps) {
+  console.log(title, value);
   return (
-    <>
-      <h3>{title}</h3>
+    <div className="code-editor-wrapper">
       <CodeMirror
         value={value}
-        height="320px"
+        height="85vh"
         extensions={
-          title === "HTML"
+          title.endsWith(".html")
             ? [html()]
-            : title === "CSS"
+            : title.endsWith(".css")
               ? [css()]
-              : [javascript(), lintGutter(), syntaxLinter]}
+              : [javascript(), lintGutter(), syntaxLinter]
+        }
         onChange={onChange}
+        className="custom-codemirror"
       />
-    </>
+    </div>
   );
 }
