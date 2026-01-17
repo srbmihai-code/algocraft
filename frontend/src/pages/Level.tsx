@@ -37,22 +37,20 @@ export default function Level() {
   const [InputTestFuncCode, setInputTestFuncCode] = useState<string | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
 
-  const { prevLevel, nextLevel } = usePrevNextLevel(chapterURL, levelURL);
   const navigate = useNavigate();
   const { username, isCompleted, setIsCompleted } = useUserCompletion({ levelURL });
+  const { prevLevel, nextLevel } = usePrevNextLevel(chapterURL, levelURL);
 
   const files = useLevelFiles({ chapterName: chapterURL, levelURL, setTestFuncCode, setInputTestFuncCode });
 
+
   useEffect(() => {
     if (!files) return;
-    if (files.html) setHtmlCode(files.html);
-    if (files.css) setCssCode(files.css);
-    if (files.js) setJsCode(files.js);
+    setHtmlCode(files.html || "");
+    setCssCode(files.css || "");
+    setJsCode(files.js || "");
   }, [files]);
-
-  const { showSkipModal, confirmSkip } = useSkipLevelModal(prevLevel?.levelURL ?? null);
-  const cancelSkip = () => navigate(-1);
-
+  
   const {
     iframeRef,
     previewIframeRef,
@@ -74,6 +72,16 @@ export default function Level() {
     setIsCompleted,
   });
 
+
+  useEffect(() => {
+    if (iframeRef.current) iframeRef.current.src = "about:blank";
+    if (previewIframeRef.current) previewIframeRef.current.src = "about:blank";
+  }, [chapterURL, levelURL]);
+
+  const { showSkipModal, confirmSkip } = useSkipLevelModal(prevLevel?.levelURL ?? null);
+  const cancelSkip = () => navigate(-1);
+
+
   const fetchQuestions = async () => {
     if (!chapterURL || !levelURL) return;
     try {
@@ -87,14 +95,10 @@ export default function Level() {
       //
     }
   };
+  useEffect(() => { fetchQuestions(); }, [chapterURL, levelURL]);
 
-  useEffect(() => {
-    fetchQuestions();
-  }, [chapterURL, levelURL]);
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+  useEffect(() => { window.scrollTo(0, 0); }, [chapterURL, levelURL]);
 
   const { chapterName, levelName } = getNamesFromURLs(chapterURL, levelURL);
 
@@ -141,13 +145,14 @@ export default function Level() {
 
 
         <aside className="level-right">
+          {htmlCode &&
           <iframe
             ref={previewIframeRef}
             className={`preview ${!htmlCode && "hidden"}`}
             sandbox="allow-scripts"
             title="Previzualizare"
             src="about:blank"
-          />
+          />}
 
           {hasRunTest && runtimeError && (
             <div className="test-result error">

@@ -37,14 +37,30 @@ export function useLevelRunner({
   const [runtimeErrorLive, setRuntimeErrorLive] = useState<{ message: string; line: number | null } | null>(null);
   const [testResult, setTestResult] = useState<TestResult | null>(null);
   const [hasRunTest, setHasRunTest] = useState(false);
+
   useEffect(() => {
-    setTestResult(null);
-    setHasRunTest(false);
     setRuntimeError(null);
     setRuntimeErrorLive(null);
-  }, [chapterName, levelURL]);
+    setTestResult(null);
+    setHasRunTest(false);
 
-  // Update iframes & cookies on code change
+    if (previewIframeRef.current) {
+      const previewBlob = makeHtmlBlob(htmlCode, cssCode, jsCode, null);
+      const url = URL.createObjectURL(previewBlob);
+      previewIframeRef.current.src = url;
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+
+    if (iframeRef.current && TestFuncCode) {
+      const testBlob = makeHtmlBlob(htmlCode, cssCode, jsCode, TestFuncCode);
+      const url = URL.createObjectURL(testBlob);
+      iframeRef.current.src = url;
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+  }, [chapterName, levelURL, htmlCode, cssCode, jsCode, TestFuncCode]);
+
   useEffect(() => {
     if (!chapterName || !levelURL) return;
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -52,41 +68,28 @@ export function useLevelRunner({
     debounceRef.current = setTimeout(() => {
       const data = JSON.stringify({ html: htmlCode, css: cssCode, js: jsCode });
       document.cookie = `level_${chapterName}_${levelURL}=${data}; path=/`;
-
-      if (iframeRef.current?.contentWindow) {
-        const blob = makeHtmlBlob(htmlCode, cssCode, jsCode, TestFuncCode);
-        const url = URL.createObjectURL(blob);
-        setRuntimeErrorLive(null);
-        iframeRef.current.contentWindow.location.replace(url);
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
-      }
-
-      if (previewIframeRef.current?.contentWindow) {
-        const blob = makeHtmlBlob(htmlCode, cssCode, jsCode, null);
-        const url = URL.createObjectURL(blob);
-        previewIframeRef.current.contentWindow.location.replace(url);
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
-      }
     }, 500);
 
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [htmlCode, cssCode, jsCode, TestFuncCode, chapterName, levelURL]);
+  }, [htmlCode, cssCode, jsCode, chapterName, levelURL]);
 
-  // Handle runtime errors & test results
   useEffect(() => {
     const handler = (e: MessageEvent) => {
       if (!e.data) return;
+
       if (e.data.type === "runtime-error") {
         setRuntimeErrorLive({
           message: e.data.message || "Eroare necunoscută în timpul rulării",
           line: e.data.line || null,
         });
       }
+
       if (e.data.type === "test-result" && !runtimeErrorLive) {
         setTestResult(e.data.result);
         setRuntimeError(null);
+
         if (e.data.result?.pass && username && !isCompleted && levelURL) {
           fetch(`${getApiBase()}/complete-level`, {
             method: "POST",
@@ -103,7 +106,7 @@ export function useLevelRunner({
   }, [runtimeErrorLive, username, isCompleted, levelURL, setIsCompleted]);
 
   const finishLevel = async () => {
-    if ((!InputTestFuncCode || !TestFuncCode) && username && !isCompleted && levelURL) {
+    if ((!InputTestFuncCode && !TestFuncCode) && username && !isCompleted && levelURL) {
       await fetch(`${getApiBase()}/complete-level`, {
         method: "POST",
         credentials: "include",
@@ -121,11 +124,11 @@ export function useLevelRunner({
 
     if (runtimeErrorLive) {
       setRuntimeError(runtimeErrorLive);
-      setTestResult(null);
       return;
     }
 
     const iframe = iframeRef.current;
+
     if (iframe && TestFuncCode) {
       const blob = makeHtmlBlob(htmlCode, cssCode, jsCode, TestFuncCode);
       const url = URL.createObjectURL(blob);
