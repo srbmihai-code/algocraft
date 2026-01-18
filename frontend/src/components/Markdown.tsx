@@ -1,7 +1,7 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import retypeRaw from "rehype-raw";
-import retypeHighlight from "rehype-highlight";
+import rehypeRaw from "rehype-raw";
+import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github-dark.css";
 import "./Markdown.css"
 export default function Markdown({ content }: { content: string }) {
@@ -13,7 +13,7 @@ export default function Markdown({ content }: { content: string }) {
     <div className="markdown">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
-        rehypePlugins={[retypeRaw, retypeHighlight]}
+        rehypePlugins={[rehypeRaw, rehypeHighlight]}
         skipHtml={false}
         components={{
           span: ({ className, children }) => {
