@@ -1,4 +1,4 @@
-window.onerror = function (msg, url, line, col, err) {
+window.onerror = function (msg, url, line) {
   window.parent.postMessage({ type: "runtime-error", message: msg, line }, "*");
 };
 

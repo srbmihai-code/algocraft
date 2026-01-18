@@ -3,6 +3,7 @@ import { makeHtmlBlob } from "../utils/makeHtmlBlob";
 import { getApiBase } from "../utils/apiBase";
 import type { TestResult } from "../utils/types";
 import runInputTest from "../utils/runInputTest";
+import { saveLevelCode } from "../utils/levelStorage";
 
 interface UseLevelRunnerProps {
   chapterName?: string;
@@ -45,30 +46,25 @@ export function useLevelRunner({
     setHasRunTest(false);
 
     if (previewIframeRef.current) {
-      const previewBlob = makeHtmlBlob(htmlCode, cssCode, jsCode, null);
-      const url = URL.createObjectURL(previewBlob);
+      const url = URL.createObjectURL(
+        makeHtmlBlob(htmlCode, cssCode, jsCode, null)
+      );
       previewIframeRef.current.src = url;
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      setTimeout(() => URL.revokeObjectURL(url), 500);
     }
 
-
-    if (iframeRef.current && TestFuncCode) {
-      const testBlob = makeHtmlBlob(htmlCode, cssCode, jsCode, TestFuncCode);
-      const url = URL.createObjectURL(testBlob);
-      iframeRef.current.src = url;
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    if (iframeRef.current) {
+      iframeRef.current.src = "about:blank";
     }
-
-  }, [chapterName, levelURL, htmlCode, cssCode, jsCode, TestFuncCode]);
+  }, [chapterName, levelURL, htmlCode, cssCode, jsCode]);
 
   useEffect(() => {
     if (!chapterName || !levelURL) return;
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
-    debounceRef.current = setTimeout(() => {
-      const data = JSON.stringify({ html: htmlCode, css: cssCode, js: jsCode });
-      document.cookie = `level_${chapterName}_${levelURL}=${data}; path=/`;
-    }, 500);
+    debounceRef.current = window.setTimeout(() => {
+      saveLevelCode(chapterName, levelURL, htmlCode, cssCode, jsCode);
+    }, 400);
 
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -81,39 +77,42 @@ export function useLevelRunner({
 
       if (e.data.type === "runtime-error") {
         setRuntimeErrorLive({
-          message: e.data.message || "Eroare necunoscută în timpul rulării",
-          line: e.data.line || null,
+          message: e.data.message,
+          line: e.data.line ?? null,
         });
+        return;
       }
 
-      if (e.data.type === "test-result" && !runtimeErrorLive) {
+      if (e.data.type === "test-result") {
+        setHasRunTest(true);
         setTestResult(e.data.result);
         setRuntimeError(null);
 
         if (e.data.result?.pass && username && !isCompleted && levelURL) {
+          setIsCompleted(true);
           fetch(`${getApiBase()}/complete-level`, {
             method: "POST",
             credentials: "include",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ level_name: levelURL }),
-          }).then(() => setIsCompleted(true)).catch(console.error);
+          }).catch(() => {});
         }
       }
     };
 
     window.addEventListener("message", handler);
     return () => window.removeEventListener("message", handler);
-  }, [runtimeErrorLive, username, isCompleted, levelURL, setIsCompleted]);
+  }, [username, isCompleted, levelURL, setIsCompleted]);
 
-  const finishLevel = async () => {
-    if ((!InputTestFuncCode && !TestFuncCode) && username && !isCompleted && levelURL) {
-      await fetch(`${getApiBase()}/complete-level`, {
+  const finishLevel = () => {
+    if (username && !isCompleted && levelURL) {
+      setIsCompleted(true);
+      fetch(`${getApiBase()}/complete-level`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ level_name: levelURL }),
-      });
-      setIsCompleted(true);
+      }).catch(() => {});
     }
   };
 
@@ -127,22 +126,36 @@ export function useLevelRunner({
       return;
     }
 
-    const iframe = iframeRef.current;
+    if (TestFuncCode && iframeRef.current) {
+      const url = URL.createObjectURL(
+        makeHtmlBlob(htmlCode, cssCode, jsCode, TestFuncCode)
+      );
 
-    if (iframe && TestFuncCode) {
-      const blob = makeHtmlBlob(htmlCode, cssCode, jsCode, TestFuncCode);
-      const url = URL.createObjectURL(blob);
-      iframe.onload = () => {
-        iframe.contentWindow?.postMessage({ type: "run-test" }, "*");
-        setTimeout(() => URL.revokeObjectURL(url), 2000);
+      iframeRef.current.onload = () => {
+        iframeRef.current?.contentWindow?.postMessage({ type: "run-test" }, "*");
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
       };
-      iframe.src = url;
-    } else if (InputTestFuncCode) {
+
+      iframeRef.current.src = url;
+      return;
+    }
+
+    if (InputTestFuncCode) {
       const result = runInputTest(InputTestFuncCode, htmlCode || jsCode);
       setTestResult(result);
-    } else {
-      finishLevel();
+      if (result.pass && username && !isCompleted && levelURL) {
+        setIsCompleted(true);
+        fetch(`${getApiBase()}/complete-level`, {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ level_name: levelURL }),
+        }).catch(() => {});
+      }
+      return;
     }
+
+    finishLevel();
   };
 
   return {

@@ -11,4 +11,4 @@ Un fișier HTML complet are:
 Este bine să le cunoști, dar nu trebuie să le scrii manual.
 
 ### 🎯 Sarcină
-Doar observă codul și apasă „Continuă”.
+Doar observă codul și apasă „Finalizează”.

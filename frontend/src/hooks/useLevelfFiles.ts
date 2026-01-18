@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import filterOutViteFiles from "../utils/filterOutViteFiles";
-import getCookie from "../utils/getCookie";
 import type { LevelFiles } from "../utils/types";
 
 interface UseLevelFilesProps {
@@ -8,6 +7,20 @@ interface UseLevelFilesProps {
   levelURL?: string;
   setTestFuncCode: (code: string | null) => void;
   setInputTestFuncCode: (code: string | null) => void;
+}
+
+function getStorageKey(chapter: string, level: string) {
+  return `level_${chapter}_${level}`;
+}
+
+function loadFromStorage(key: string) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
 }
 
 export function useLevelFiles({
@@ -24,48 +37,49 @@ export function useLevelFiles({
     const safeChapter = chapterName.replace(/[^a-zA-Z0-9_-]/g, "");
     const safeLevel = levelURL.replace(/[^a-zA-Z0-9_-]/g, "");
     const base = `/${safeChapter}/${safeLevel}`;
-    const cookieKey = `level_${safeChapter}_${safeLevel}`;
+    const storageKey = getStorageKey(safeChapter, safeLevel);
+
+    const tryFetch = async (path: string) => {
+      try {
+        const res = await fetch(path);
+        if (res.ok) return filterOutViteFiles(await res.text());
+      } catch {}
+      return undefined;
+    };
 
     const loadFiles = async () => {
       const newFiles: LevelFiles = {};
 
-      const tryFetch = async (path: string) => {
-        try {
-          const res = await fetch(path);
-          if (res.ok) return filterOutViteFiles(await res.text());
-        } catch { }
-        return undefined;
-      };
-
-      // Load from cookie first
-      const cookieData = getCookie(cookieKey);
-      if (cookieData) {
-        try {
-          const parsed = JSON.parse(cookieData);
-          if (parsed.html) newFiles.html = filterOutViteFiles(parsed.html);
-          if (parsed.css) newFiles.css = filterOutViteFiles(parsed.css);
-          if (parsed.js) newFiles.js = filterOutViteFiles(parsed.js);
-        } catch {}
+      const saved = loadFromStorage(storageKey);
+      if (saved) {
+        if (saved.html) newFiles.html = filterOutViteFiles(saved.html);
+        if (saved.css) newFiles.css = filterOutViteFiles(saved.css);
+        if (saved.js) newFiles.js = filterOutViteFiles(saved.js);
       }
 
-      // Load from server if missing
-      const htmlText = await tryFetch(`${base}/index.html`);
-      if (!newFiles.html && htmlText) newFiles.html = htmlText;
+      if (!newFiles.html) {
+        const html = await tryFetch(`${base}/index.html`);
+        if (html) newFiles.html = html;
+      }
 
-      const cssText = await tryFetch(`${base}/style.css`);
-      if (!newFiles.css && cssText) newFiles.css = cssText;
+      if (!newFiles.css) {
+        const css = await tryFetch(`${base}/style.css`);
+        if (css) newFiles.css = css;
+      }
 
-      const jsText = await tryFetch(`${base}/index.js`);
-      if (!newFiles.js && jsText) newFiles.js = jsText;
+      if (!newFiles.js) {
+        const js = await tryFetch(`${base}/index.js`);
+        if (js) newFiles.js = js;
+      }
 
-      const mdText = await tryFetch(`${base}/instructions.md`);
-      if (mdText) newFiles.instructions = mdText;
+      const instructions = await tryFetch(`${base}/instructions.md`);
+      if (instructions) newFiles.instructions = instructions;
 
-      const testText = await tryFetch(`${base}/test.js`);
-      if (testText) setTestFuncCode(testText);
+      const test = await tryFetch(`${base}/test.js`);
+      setTestFuncCode(test ?? null);
 
-      const inputTestText = await tryFetch(`${base}/userInputTest.js`);
-      if (inputTestText) setInputTestFuncCode(inputTestText);
+      const inputTest = await tryFetch(`${base}/userInputTest.js`);
+      setInputTestFuncCode(inputTest ?? null);
 
       setFiles(newFiles);
     };

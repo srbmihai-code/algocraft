@@ -1,18 +1,14 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import Markdown from "../components/Markdown";
 import { usePrevNextLevel } from "../hooks/usePrevNextLevel";
 import { useLevelFiles } from "../hooks/useLevelfFiles";
-import { useUserCompletion } from "../hooks/useUserCompletion";
-import { useSkipLevelModal } from "../hooks/useSkipLevelModal";
 import { useLevelRunner } from "../hooks/useLevelRunner";
 import { LevelHeader } from "../components/LevelHeader";
 import { EditorSection } from "../components/EditorSection";
-import { SkipLevelModal } from "../components/SkipLevelModal";
 import getNamesFromURLs from "../utils/getNamesFromURL";
-
-import "./Level.css";
 import { getApiBase } from "../utils/apiBase";
+import "./Level.css";
 
 export type Question = {
   id: number;
@@ -30,19 +26,25 @@ export type Question = {
 
 export default function Level() {
   const { chapterName: chapterURL, levelURL } = useParams<{ chapterName: string; levelURL: string }>();
+
   const [htmlCode, setHtmlCode] = useState("");
   const [cssCode, setCssCode] = useState("");
   const [jsCode, setJsCode] = useState("");
   const [TestFuncCode, setTestFuncCode] = useState<string | null>(null);
   const [InputTestFuncCode, setInputTestFuncCode] = useState<string | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [username, setUsername] = useState<string | null>(null);
+  const [isCompleted, setIsCompleted] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
 
-  const navigate = useNavigate();
-  const { username, isCompleted, setIsCompleted } = useUserCompletion({ levelURL });
   const { prevLevel, nextLevel } = usePrevNextLevel(chapterURL, levelURL);
 
-  const files = useLevelFiles({ chapterName: chapterURL, levelURL, setTestFuncCode, setInputTestFuncCode });
-
+  const files = useLevelFiles({
+    chapterName: chapterURL,
+    levelURL,
+    setTestFuncCode,
+    setInputTestFuncCode,
+  });
 
   useEffect(() => {
     if (!files) return;
@@ -50,7 +52,57 @@ export default function Level() {
     setCssCode(files.css || "");
     setJsCode(files.js || "");
   }, [files]);
-  
+
+  useEffect(() => {
+    setTestFuncCode(null);
+    setInputTestFuncCode(null);
+  }, [chapterURL, levelURL]);
+
+  useEffect(() => {
+    if (authChecked) return;
+
+    if (!document.cookie) {
+      setAuthChecked(true);
+      return;
+    }
+
+    fetch(`${getApiBase()}/me`, { credentials: "include" })
+      .then(res => (res.ok ? res.json() : null))
+      .then(data => {
+        if (data?.username) setUsername(data.username);
+      })
+      .finally(() => setAuthChecked(true));
+  }, [authChecked]);
+
+  useEffect(() => {
+    if (!authChecked || !username || !levelURL) return;
+
+    fetch(`${getApiBase()}/completed-levels`, { credentials: "include" })
+      .then(res => (res.ok ? res.json() : null))
+      .then(data => {
+        if (data?.success) {
+          setIsCompleted(
+            data.levels.some((l: any) => l.level_name === levelURL)
+          );
+        }
+      })
+      .catch(() => {});
+  }, [authChecked, username, levelURL]);
+
+  useEffect(() => {
+    if (!authChecked || !username || !chapterURL || !levelURL) return;
+
+    fetch(
+      `${getApiBase()}/questions?chapterName=${encodeURIComponent(chapterURL)}&levelName=${encodeURIComponent(levelURL)}`,
+      { credentials: "include" }
+    )
+      .then(res => (res.ok ? res.json() : null))
+      .then(data => {
+        if (data?.success) setQuestions(data.questions);
+      })
+      .catch(() => {});
+  }, [authChecked, username, chapterURL, levelURL]);
+
   const {
     iframeRef,
     previewIframeRef,
@@ -72,54 +124,40 @@ export default function Level() {
     setIsCompleted,
   });
 
-
   useEffect(() => {
     if (iframeRef.current) iframeRef.current.src = "about:blank";
     if (previewIframeRef.current) previewIframeRef.current.src = "about:blank";
   }, [chapterURL, levelURL]);
 
-  const { showSkipModal, confirmSkip } = useSkipLevelModal(prevLevel?.levelURL ?? null);
-  const cancelSkip = () => navigate(-1);
-
-
-  const fetchQuestions = async () => {
-    if (!chapterURL || !levelURL) return;
-    try {
-      const res = await fetch(
-        `${getApiBase()}/questions?chapterName=${encodeURIComponent(chapterURL)}&levelName=${encodeURIComponent(levelURL)}`,
-        { credentials: "include" }
-      );
-      const data = await res.json();
-      if (data.success) setQuestions(data.questions);
-    } catch {
-      //
-    }
-  };
-  useEffect(() => { fetchQuestions(); }, [chapterURL, levelURL]);
-
-
-  useEffect(() => { window.scrollTo(0, 0); }, [chapterURL, levelURL]);
+  useEffect(() => {
+    requestAnimationFrame(() => window.scrollTo(0, 0));
+  }, [chapterURL, levelURL]);
 
   const { chapterName, levelName } = getNamesFromURLs(chapterURL, levelURL);
 
   return (
     <div className="level-container">
-      {chapterURL &&  <LevelHeader
-        {...{
-          username,
-          isCompleted,
-          chapterName,
-          levelName,
-          prevLevel,
-          nextLevel,
-          htmlCode,
-          cssCode,
-          jsCode,
-          questions,
-          chapterURL
-        }}
-      />}
+      {chapterURL && (
+        <LevelHeader
+          username={username}
+          isCompleted={isCompleted}
+          chapterName={chapterName}
+          levelName={levelName}
+          prevLevel={prevLevel}
+          nextLevel={nextLevel}
+          htmlCode={htmlCode}
+          cssCode={cssCode}
+          jsCode={jsCode}
+          questions={questions}
+          chapterURL={chapterURL}
+        />
+      )}
 
+      {isCompleted && (
+        <div className="level-completed-banner">
+          ✔ Nivel completat
+        </div>
+      )}
 
       <div className="level-layout">
         <aside className="level-left">
@@ -138,21 +176,21 @@ export default function Level() {
             setHtmlCode={setHtmlCode}
             setCssCode={setCssCode}
             setJsCode={setJsCode}
-            onRun={(TestFuncCode || InputTestFuncCode) ? runTest : finishLevel}
-            runLabel={(TestFuncCode || InputTestFuncCode) ? "Rulează testul" : "Finalizează"}
+            onRun={TestFuncCode || InputTestFuncCode ? runTest : finishLevel}
+            runLabel={TestFuncCode || InputTestFuncCode ? "Rulează testul" : "Finalizează"}
           />
         </main>
 
-
         <aside className="level-right">
-          {htmlCode &&
-          <iframe
-            ref={previewIframeRef}
-            className={`preview ${!htmlCode && "hidden"}`}
-            sandbox="allow-scripts"
-            title="Previzualizare"
-            src="about:blank"
-          />}
+          {htmlCode && (
+            <iframe
+              ref={previewIframeRef}
+              className="preview"
+              sandbox="allow-scripts"
+              title="Previzualizare"
+              src="about:blank"
+            />
+          )}
 
           {hasRunTest && runtimeError && (
             <div className="test-result error">
@@ -177,12 +215,7 @@ export default function Level() {
         title="Test Runner"
         src="about:blank"
       />
-
-      <SkipLevelModal
-        visible={showSkipModal}
-        onConfirm={confirmSkip}
-        onCancel={cancelSkip}
-      />
     </div>
   );
 }
+``

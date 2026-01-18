@@ -12,7 +12,6 @@ interface CodeEditorProps {
 }
 
 export function CodeEditor({ title, value, onChange }: CodeEditorProps) {
-  console.log(title, value);
   return (
     <div className="code-editor-wrapper">
       <CodeMirror

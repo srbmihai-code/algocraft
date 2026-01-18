@@ -15,7 +15,6 @@ async function login(username: string, password: string) {
 }
 
 async function signup(username: string, password: string) {
-  console.log(`${getApiBase()}/signup`)
   const res = await fetch(`${getApiBase()}/signup`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -38,7 +37,6 @@ export default function AuthPage() {
 
   useEffect(() => {
     checkSession().then((res) => {
-      console.log(res)
       if (res.authenticated) navigate("/levels");
     });
   }, [navigate]);
