@@ -45,7 +45,9 @@ export default function Level() {
     setTestFuncCode,
     setInputTestFuncCode,
   });
-
+  const isLoading =
+    !authChecked ||
+    !files;
   useEffect(() => {
     if (!files) return;
     setHtmlCode(files.html || "");
@@ -134,6 +136,14 @@ export default function Level() {
   }, [chapterURL, levelURL]);
 
   const { chapterName, levelName } = getNamesFromURLs(chapterURL, levelURL);
+
+  if (isLoading) {
+    return (
+      <div className="level-loading">
+        <div className="spinner"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="level-container">
