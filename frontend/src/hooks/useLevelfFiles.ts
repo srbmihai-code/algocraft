@@ -49,37 +49,54 @@ export function useLevelFiles({
 
     const loadFiles = async () => {
       const newFiles: LevelFiles = {};
-
       const saved = loadFromStorage(storageKey);
-      if (saved) {
-        if (saved.html) newFiles.html = filterOutViteFiles(saved.html);
-        if (saved.css) newFiles.css = filterOutViteFiles(saved.css);
-        if (saved.js) newFiles.js = filterOutViteFiles(saved.js);
+
+      
+      const fetchPromises: Record<string, Promise<string | undefined>> = {};
+
+      if (saved?.html) {
+        newFiles.html = filterOutViteFiles(saved.html);
+      } else {
+        fetchPromises.html = tryFetch(`${base}/index.html`);
       }
 
-      if (!newFiles.html) {
-        const html = await tryFetch(`${base}/index.html`);
-        if (html) newFiles.html = html;
+      if (saved?.css) {
+        newFiles.css = filterOutViteFiles(saved.css);
+      } else {
+        fetchPromises.css = tryFetch(`${base}/style.css`);
       }
 
-      if (!newFiles.css) {
-        const css = await tryFetch(`${base}/style.css`);
-        if (css) newFiles.css = css;
+      if (saved?.js) {
+        newFiles.js = filterOutViteFiles(saved.js);
+      } else {
+        fetchPromises.js = tryFetch(`${base}/index.js`);
       }
 
-      if (!newFiles.js) {
-        const js = await tryFetch(`${base}/index.js`);
-        if (js) newFiles.js = js;
+      
+      fetchPromises.instructions = tryFetch(`${base}/instructions.md`);
+      fetchPromises.test = tryFetch(`${base}/test.js`);
+      fetchPromises.inputTest = tryFetch(`${base}/userInputTest.js`);
+
+      
+      const results = await Promise.all(
+        Object.entries(fetchPromises).map(async ([key, promise]) => [key, await promise])
+      );
+
+      
+      for (const [key, value] of results) {
+        if (value) {
+          if (key === 'html') newFiles.html = value;
+          else if (key === 'css') newFiles.css = value;
+          else if (key === 'js') newFiles.js = value;
+          else if (key === 'instructions') newFiles.instructions = value;
+          else if (key === 'test') setTestFuncCode(value);
+          else if (key === 'inputTest') setInputTestFuncCode(value);
+        }
       }
 
-      const instructions = await tryFetch(`${base}/instructions.md`);
-      if (instructions) newFiles.instructions = instructions;
-
-      const test = await tryFetch(`${base}/test.js`);
-      setTestFuncCode(test ?? null);
-
-      const inputTest = await tryFetch(`${base}/userInputTest.js`);
-      setInputTestFuncCode(inputTest ?? null);
+      
+      if (!fetchPromises.test) setTestFuncCode(null);
+      if (!fetchPromises.inputTest) setInputTestFuncCode(null);
 
       setFiles(newFiles);
     };
