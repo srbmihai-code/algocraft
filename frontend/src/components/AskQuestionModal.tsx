@@ -2,8 +2,8 @@ import { useState } from "react";
 import { getApiBase } from "../utils/apiBase";
 
 interface Props {
-  chapterName?: string;
-  levelName?: string;
+  chapterURL?: string;
+  levelURL?: string;
   htmlCode: string;
   cssCode: string;
   jsCode: string;
@@ -12,8 +12,8 @@ interface Props {
 }
 
 export function AskQuestionModal({
-  chapterName,
-  levelName,
+  chapterURL,
+  levelURL,
   htmlCode,
   cssCode,
   jsCode,
@@ -39,8 +39,8 @@ export function AskQuestionModal({
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
-          chapterName,
-          levelName,
+          chapterName: chapterURL,
+          levelName: levelURL,
           question,
           htmlCode,
           cssCode,

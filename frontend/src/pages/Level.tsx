@@ -153,13 +153,8 @@ export default function Level() {
           jsCode={jsCode}
           questions={questions}
           chapterURL={chapterURL}
+          levelURL={levelURL}
         />
-      )}
-
-      {isCompleted && (
-        <div className="level-completed-banner">
-          ✔ Nivel completat
-        </div>
       )}
 
       <div className="level-layout">

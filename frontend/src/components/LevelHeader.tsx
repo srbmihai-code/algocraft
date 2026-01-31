@@ -22,6 +22,7 @@ interface Props {
   cssCode: string;
   jsCode: string;
   chapterURL: string;
+  levelURL: string;
   questions: Question[];
 }
 
@@ -35,7 +36,9 @@ export function LevelHeader({
   htmlCode,
   cssCode,
   jsCode,
-  questions
+  questions,
+  chapterURL,
+  levelURL,
 }: Props) {
   const [showQuestionModal, setShowQuestionModal] = useState(false);
   const [showQuestionsModal, setShowQuestionsModal] = useState(false);
@@ -66,28 +69,29 @@ export function LevelHeader({
 
       <div className="level-header-right">
         <LevelNavigation prevLevel={prevLevel} nextLevel={nextLevel} />
+        {username && <>
+            <button
+                className="header-btn"
+                onClick={() => setShowQuestionModal(true)}
+            >
+                Pune o întrebare
+            </button>
 
-        <button
-          className="header-btn"
-          onClick={() => setShowQuestionModal(true)}
-        >
-          Pune o întrebare
-        </button>
-
-        {questions.length > 0 && (
-          <button
-            className="header-btn secondary"
-            onClick={() => setShowQuestionsModal(true)}
-          >
-            Vezi întrebările
-          </button>
-        )}
+          {questions.length > 0 && (
+            <button
+              className="header-btn secondary"
+              onClick={() => setShowQuestionsModal(true)}
+            >
+              Vezi întrebările
+            </button>
+          )}
+        </>}
       </div>
 
       {showQuestionModal && (
         <AskQuestionModal
-          chapterName={chapterName}
-          levelName={levelName}
+          chapterURL={chapterURL}
+          levelURL={levelURL}
           htmlCode={htmlCode}
           cssCode={cssCode}
           jsCode={jsCode}
