@@ -45,9 +45,7 @@ export default function Level() {
     setTestFuncCode,
     setInputTestFuncCode,
   });
-  const isLoading =
-    !authChecked ||
-    !files;
+
   useEffect(() => {
     if (!files) return;
     setHtmlCode(files.html || "");
@@ -62,11 +60,6 @@ export default function Level() {
 
   useEffect(() => {
     if (authChecked) return;
-
-    if (!document.cookie) {
-      setAuthChecked(true);
-      return;
-    }
 
     fetch(`${getApiBase()}/me`, { credentials: "include" })
       .then(res => (res.ok ? res.json() : null))
@@ -104,7 +97,6 @@ export default function Level() {
       })
       .catch(() => {});
   }, [authChecked, username, chapterURL, levelURL]);
-
   const {
     iframeRef,
     previewIframeRef,
@@ -136,14 +128,15 @@ export default function Level() {
   }, [chapterURL, levelURL]);
 
   const { chapterName, levelName } = getNamesFromURLs(chapterURL, levelURL);
+  console.log(username)
 
-  if (isLoading) {
-    return (
-      <div className="level-loading">
-        <div className="spinner"></div>
-      </div>
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     <div className="level-loading">
+  //       <div className="spinner"></div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="level-container">
