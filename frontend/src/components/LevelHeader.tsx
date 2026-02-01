@@ -22,7 +22,7 @@ interface Props {
   cssCode: string;
   jsCode: string;
   chapterURL: string;
-  levelURL: string;
+  levelURL: string | undefined;
   questions: Question[];
 }
 
