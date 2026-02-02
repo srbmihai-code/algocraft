@@ -130,13 +130,21 @@ export default function Level() {
   const { chapterName, levelName } = getNamesFromURLs(chapterURL, levelURL);
   console.log(username)
 
-  // if (isLoading) {
-  //   return (
-  //     <div className="level-loading">
-  //       <div className="spinner"></div>
-  //     </div>
-  //   );
-  // }
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+
+    const prevHtmlOverflow = html.style.overflow;
+    const prevBodyOverflow = body.style.overflow;
+
+    html.style.overflow = 'hidden';
+    body.style.overflow = 'hidden';
+
+    return () => {
+      html.style.overflow = prevHtmlOverflow;
+      body.style.overflow = prevBodyOverflow;
+    };
+  }, []);
 
   return (
     <div className="level-container">
