@@ -52,11 +52,7 @@ export function LevelHeader({
         </Link>
         {username ? (
           <p>Bine ai venit, <strong>{username}</strong></p>
-        ) : (
-          <p>
-            <Link to="/auth" className="header-btn">Loghează-te pentru a-ți salva progresul</Link>
-          </p>
-        )}
+        ) : null}
 
         {isCompleted && <span className="completed-label">Rezolvat ✔</span>}
       </div>
@@ -69,23 +65,29 @@ export function LevelHeader({
 
       <div className="level-header-right">
         <LevelNavigation prevLevel={prevLevel} nextLevel={nextLevel} />
-        {username && <>
+        {username ? (
+          <>
             <button
-                className="header-btn"
-                onClick={() => setShowQuestionModal(true)}
+              className="header-btn"
+              onClick={() => setShowQuestionModal(true)}
             >
-                Pune o întrebare
+              Pune o întrebare
             </button>
 
-          {questions.length > 0 && (
-            <button
-              className="header-btn secondary"
-              onClick={() => setShowQuestionsModal(true)}
-            >
-              Vezi întrebările
-            </button>
-          )}
-        </>}
+            {questions.length > 0 && (
+              <button
+                className="header-btn secondary"
+                onClick={() => setShowQuestionsModal(true)}
+              >
+                Vezi întrebările
+              </button>
+            )}
+          </>
+        ) : (
+          <Link to="/auth" className="header-btn">
+            Autentificare / Creare cont
+          </Link>
+        )}
       </div>
 
       {showQuestionModal && (

@@ -188,9 +188,6 @@ app.get("/api/me", (req, res) => {
   );
 });
 
-
-
-
 app.get("/api/completed-levels", (req, res) => {
   if (!req.session.userId) return res.status(401).json({ success: false, message: "Neautorizat." });
 
@@ -221,6 +218,7 @@ app.post("/api/logout", (req, res) => {
     res.json({ success: true, message: "Deconectare reușită." });
   });
 });
+db.all("SELECT * FROM questions", [], (_, rows) => console.log(rows,'here'));
 
 // Allows a logged-in user to ask a question for a level
 app.get("/api/questions", (req, res) => {

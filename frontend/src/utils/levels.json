@@ -2,6 +2,8 @@
   {
     "chapterURL": "html",
     "chapterName": "HTML",
+    "chapterDescription": "HTML definește structura de bază a oricărui website de pe web. Vei învăța cum să folosești tag-urile cele mai comune pentru text și alte elemente",
+    "chapterConcepts": "structură, tag-uri comune pentru: text, butoane, input-uri, formulare",
     "levels": [
       { "levelURL": "primii-pasi-html", "levelName": "Primii pași HTML", "language": "html" },
       { "levelURL": "titluri-si-comentarii", "levelName": "Titluri și comentarii", "language": "html" },
@@ -14,10 +16,11 @@
       { "levelURL": "formulare", "levelName": "Formulare", "language": "html" }
     ]
   },
-
   {
     "chapterURL": "css",
     "chapterName": "CSS",
+    "chapterDescription": "CSS stilizează paginile web și le dă formă, culoare și așezare.",
+    "chapterConcepts": "sintaxă, selectori, proprietăți: culoare, poziționare, box model",
     "levels": [
       { "levelURL": "culoare-fundal", "levelName": "Culoare fundal", "language": "css" },
       { "levelURL": "stilizare-text", "levelName": "Stilizare text", "language": "css" },
@@ -26,10 +29,11 @@
       { "levelURL": "stilizare-buton", "levelName": "Stilizare buton", "language": "css" }
     ]
   },
-
   {
     "chapterURL": "js",
     "chapterName": "Baza JavaScript",
+    "chapterDescription": "JavaScript este unul dintre cele mai folosite limbaje de programare, folosit în special pentru pagini web",
+    "chapterConcepts": "logică, operatori, condiții, bucle, obiecte, DOM, funcții, event listeners",
     "levels": [
       { "levelURL": "variabile", "levelName": "Variabile și tipuri", "language": "js" },
       { "levelURL": "operatori", "levelName": "Operatori de bază", "language": "js" },
@@ -39,23 +43,27 @@
       { "levelURL": "obiecte", "levelName": "Obiecte și acces proprietăți", "language": "js" },
       { "levelURL": "dom", "levelName": "Manipulare DOM", "language": "js" },
       { "levelURL": "event-listeners", "levelName": "Event listeners și update DOM", "language": "js" },
-      { "levelURL": "calculator", "levelName": "Mini-proiect: Calculator", "language": "js", "isProject": true }      
+      { "levelURL": "calculator", "levelName": "Mini-proiect: Calculator", "language": "js", "isProject": true }
     ]
   },
   {
-  "chapterURL": "vectori",
-  "chapterName": "Vectori (Arrays)",
-  "levels": [
-    { "levelURL": "iterare", "levelName": "Iterare prin vector", "language": "js" },
-    { "levelURL": "adaugare-element", "levelName": "Adăugare elemente în vector", "language": "js" },
-    { "levelURL": "cautare-liniara", "levelName": "Căutare liniară", "language": "js" },
-    { "levelURL": "cautare-binara", "levelName": "Căutare binară", "language": "js" },
-    { "levelURL": "baza-de-date", "levelName": "Mini-bază de date: căutare utilizatori", "language": "js", "isProject": true }
-  ]
+    "chapterURL": "vectori",
+    "chapterName": "Vectori (Arrays)",
+    "chapterDescription": "Vectorii sunt o structură de date foarte des folosită pentru a reprezenta liste de date",
+    "chapterConcepts": "inițializare, iterare, adăugare, căutare liniară și binară",
+    "levels": [
+      { "levelURL": "iterare", "levelName": "Iterare prin vector", "language": "js" },
+      { "levelURL": "adaugare-element", "levelName": "Adăugare elemente în vector", "language": "js" },
+      { "levelURL": "cautare-liniara", "levelName": "Căutare liniară", "language": "js" },
+      { "levelURL": "cautare-binara", "levelName": "Căutare binară", "language": "js" },
+      { "levelURL": "baza-de-date", "levelName": "Mini-bază de date: căutare utilizatori", "language": "js", "isProject": true }
+    ]
   },
   {
     "chapterURL": "liste",
     "chapterName": "Structuri de date (listă simplă, stivă, coadă)",
+    "chapterDescription": "Listele înlănțuite sunt folosite deoarece sunt mai eficiente pentru anumite operații",
+    "chapterConcepts": "programarea unei clase și metode, stack, queue, aplicarea lor",
     "levels": [
       { "levelURL": "lista-simpla", "levelName": "Listă simplă (linked list)", "language": "js" },
       { "levelURL": "stiva", "levelName": "Stivă (stack)", "language": "js" },
@@ -67,6 +75,8 @@
   {
     "chapterURL": "recursivitate",
     "chapterName": "Recursivitate",
+    "chapterDescription": "Algoritmii recursivi sunt un mod de a rezolva anumite probleme care implică autoapelarea",
+    "chapterConcepts": "explicarea algoritmului, șirul lui Fibonacci, sumă, quicksort, navigarea labirintului",
     "levels": [
       { "levelURL": "fibonacci", "levelName": "Recursivitate: Șirul lui Fibonacci", "language": "js" },
       { "levelURL": "suma-recursiva", "levelName": "Sumă recursivă", "language": "js" },
@@ -75,8 +85,11 @@
       { "levelURL": "labirint-rezolvare", "levelName": "Rezolvarea unui labirint", "language": "js" }
     ]
   },
-  { "chapterURL": "practici-bune",
+  {
+    "chapterURL": "practici-bune",
     "chapterName": "Practici bune de programare",
+    "chapterDescription": "Programarea nu este doar despre cod, ci și organizarea lui pentru a fi ușor de citit și schimbat",
+    "chapterConcepts": "cod organizat, numire, spargerea funcțiilor mari, erori",
     "levels": [
       { "levelURL": "cod-curat", "levelName": "Cod curat", "language": "js" },
       { "levelURL": "nume-variabile", "levelName": "Numele variabilelor", "language": "js" },
