@@ -41,6 +41,21 @@ export default function AuthPage() {
     });
   }, [navigate]);
 
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const prevHtmlOverflow = html.style.overflow;
+    const prevBodyOverflow = body.style.overflow;
+
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+
+    return () => {
+      html.style.overflow = prevHtmlOverflow;
+      body.style.overflow = prevBodyOverflow;
+    };
+  }, []);
+
   const resetForm = () => {
     setUsername("");
     setPassword("");
@@ -90,7 +105,8 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="auth-container">
+    <div className="auth-page">
+      <div className="auth-container">
       <h2>{mode === "login" ? "Autentificare" : "Creare cont"}</h2>
       <form onSubmit={handleSubmit} className="auth-form">
         <input
@@ -144,6 +160,7 @@ export default function AuthPage() {
           </>
         )}
       </p>
+      </div>
     </div>
   );
 }

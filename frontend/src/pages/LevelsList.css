@@ -67,7 +67,7 @@
 .user-info p {
   margin: 0;
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 1.2rem;
   color: #0f172a;
 }
 
@@ -153,6 +153,7 @@
   width: 18px;
   height: 18px;
   display: block;
+  user-select: none;
 }
 
 .chapter-card {
@@ -164,7 +165,6 @@
   box-shadow: 0 5px 17px rgba(0, 0, 0, 0.08);
   transition: transform 0.1s ease, box-shadow 0.1s ease;
   flex-shrink: 0;
-  user-select: none;
 }
 
 .chapter-card:hover {
@@ -174,8 +174,6 @@
 .chapter-icon {
   width: 44px;
   height: 44px;
-  user-select: none;
-  -webkit-user-drag: none;
 }
 
 .chapter-description {
@@ -183,7 +181,7 @@
   line-height: 1.6;
   opacity: 0.75;
   display: block;
-  height: 9.5rem;
+  height: 10rem;
 }
 
 .progress-bar {
@@ -202,7 +200,7 @@
 }
 
 .progress-text {
-  font-size: 0.9rem;
+  font-size: 1rem;
   margin-top: 0.2rem;
 }
 
@@ -212,26 +210,29 @@
 
 .levels-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(264px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 1rem;
 }
 
 .level-card {
-  background: #f9fafb;
-  border-radius: 14px;
-  padding: 1rem;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 0.9rem 1rem;
   text-decoration: none;
   color: inherit;
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: 0.4rem;
   position: relative;
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
 
 .level-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 7px 22px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.12);
 }
 
 .level-card.completed {
@@ -240,18 +241,42 @@
 
 .level-title {
   font-weight: 600;
+  font-size: 1rem;
 }
 
 .level-meta {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   opacity: 0.7;
 }
 
 .level-check {
   position: absolute;
-  top: 10px;
-  right: 12px;
+  top: 8px;
+  right: 10px;
   color: #16a34a;
+}
+
+.level-message-icon {
+  width: 30px;
+  height: 30px;
+  align-self: flex-end;
+  opacity: 0.8;
+}
+
+.level-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 10px;
+  background: #f1f5f9;
+  color: #0f172a;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.3px;
+  flex-shrink: 0;
 }
 
 .level-card.html {

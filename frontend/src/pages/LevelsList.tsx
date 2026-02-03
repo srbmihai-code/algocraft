@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import levelsData from "../utils/levels.json";
 import "./LevelsList.css";
 import { getApiBase } from "../utils/apiBase";
@@ -13,6 +13,7 @@ import practiciIcon from "../assets/practici-bune.png";
 import logo from "../assets/light-bulb.png";
 import leftArrow from "../assets/left.png";
 import rightArrow from "../assets/right.png";
+import messageIcon from "../assets/message.png";
 
 
 type Level = {
@@ -47,9 +48,8 @@ export default function LevelsList() {
   const [loading, setLoading] = useState(true);
   const [activeChapter, setActiveChapter] = useState<Chapter | null>(null);
   const chaptersRowRef = useRef<HTMLDivElement | null>(null);
-  const isDraggingRef = useRef(false);
-  const dragStartXRef = useRef(0);
-  const dragScrollLeftRef = useRef(0);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [levelQuestionsMap, setLevelQuestionsMap] = useState<Record<string, boolean>>({});
 
   const navigate = useNavigate();
 
@@ -57,29 +57,6 @@ export default function LevelsList() {
     const row = chaptersRowRef.current;
     if (!row) return;
     row.scrollBy({ left: direction * 520, behavior: "smooth" });
-  };
-
-  const onChaptersPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
-    const row = chaptersRowRef.current;
-    if (!row) return;
-    isDraggingRef.current = true;
-    dragStartXRef.current = event.clientX;
-    dragScrollLeftRef.current = row.scrollLeft;
-    row.setPointerCapture(event.pointerId);
-  };
-
-  const onChaptersPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
-    const row = chaptersRowRef.current;
-    if (!row || !isDraggingRef.current) return;
-    const delta = event.clientX - dragStartXRef.current;
-    row.scrollLeft = dragScrollLeftRef.current - delta;
-  };
-
-  const onChaptersPointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
-    const row = chaptersRowRef.current;
-    if (!row) return;
-    isDraggingRef.current = false;
-    row.releasePointerCapture(event.pointerId);
   };
 
   const fetchCompletedLevels = async () => {
@@ -123,6 +100,50 @@ export default function LevelsList() {
 
     fetchUserData();
   }, []);
+
+  useEffect(() => {
+    if (!chapters.length) return;
+    const chapterParam = searchParams.get("chapter");
+    if (!chapterParam) return;
+    const match = chapters.find((c) => c.chapterURL === chapterParam);
+    if (match) {
+      setActiveChapter(match);
+    }
+  }, [chapters, searchParams]);
+
+  useEffect(() => {
+    if (!activeChapter || !username) return;
+
+    const fetchQuestionsForLevels = async () => {
+      const results = await Promise.all(
+        activeChapter.levels.map(async (level) => {
+          try {
+            const res = await fetch(
+              `${getApiBase()}/questions?chapterName=${encodeURIComponent(
+                activeChapter.chapterURL
+              )}&levelName=${encodeURIComponent(level.levelURL)}`,
+              { credentials: "include" }
+            );
+            if (!res.ok) return [level.levelURL, false] as const;
+            const data = await res.json();
+            return [level.levelURL, !!data?.success && data.questions?.length > 0] as const;
+          } catch {
+            return [level.levelURL, false] as const;
+          }
+        })
+      );
+
+      setLevelQuestionsMap((prev) => {
+        const next = { ...prev };
+        for (const [levelURL, hasQuestions] of results) {
+          next[levelURL] = hasQuestions;
+        }
+        return next;
+      });
+    };
+
+    fetchQuestionsForLevels();
+  }, [activeChapter, username]);
 
   if (loading) return <p>Loading...</p>;
 
@@ -183,14 +204,7 @@ export default function LevelsList() {
           <img src={leftArrow} alt="" className="chapters-scroll-icon" />
         </button>
 
-        <div
-          className="chapters-row"
-          ref={chaptersRowRef}
-          onPointerDown={onChaptersPointerDown}
-          onPointerMove={onChaptersPointerMove}
-          onPointerUp={onChaptersPointerUp}
-          onPointerLeave={onChaptersPointerUp}
-        >
+        <div className="chapters-row" ref={chaptersRowRef}>
           {chapters.map((chapter) => {
           const total = chapter.levels.length;
           const completed = chapter.levels.filter((l) =>
@@ -209,7 +223,10 @@ export default function LevelsList() {
                   ? "active"
                   : ""
               }`}
-              onClick={() => setActiveChapter(chapter)}
+              onClick={() => {
+                setActiveChapter(chapter);
+                setSearchParams({ chapter: chapter.chapterURL });
+              }}
             >
               <img
                 src={chapterIcons[chapter.chapterURL]}
@@ -255,7 +272,7 @@ export default function LevelsList() {
           <h3>{activeChapter.chapterName}</h3>
 
           <div className="levels-grid">
-            {activeChapter.levels.map((level) => {
+            {activeChapter.levels.map((level, index) => {
               const isCompleted = completedLevels.includes(
                 decodeURIComponent(level.levelURL)
               );
@@ -270,10 +287,18 @@ export default function LevelsList() {
                     isCompleted ? "completed" : ""
                   }`}
                 >
+                  <span className="level-number">{index + 1}</span>
                   <span className="level-title">{level.levelName}</span>
                   <span className="level-meta">
                     {level.language.toUpperCase()}
                   </span>
+                  {levelQuestionsMap[level.levelURL] && (
+                    <img
+                      src={messageIcon}
+                      alt="Intrebari"
+                      className="level-message-icon"
+                    />
+                  )}
                   {isCompleted && (
                     <span className="level-check">✔</span>
                   )}

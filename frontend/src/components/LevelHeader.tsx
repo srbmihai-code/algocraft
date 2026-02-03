@@ -44,51 +44,53 @@ export function LevelHeader({
   const [showQuestionsModal, setShowQuestionsModal] = useState(false);
 
   return (
-    <header className="level-header-bar">
-      <div className="level-header-left">
-        <Link to={"/"} className="site-link">
-          <img src={logo} alt="Logo" className="level-logo" />
-          <span className="site-name">AlgoCraft</span>
-        </Link>
-        {username ? (
-          <p>Bine ai venit, <strong>{username}</strong></p>
-        ) : null}
-
-        {isCompleted && <span className="completed-label">Rezolvat ✔</span>}
-      </div>
-
-      <div className="level-header-center">
-        <h2>
-          {chapterName ?? "Capitol"}: {levelName ?? "Nivel"}
-        </h2>
-      </div>
-
-      <div className="level-header-right">
-        <LevelNavigation prevLevel={prevLevel} nextLevel={nextLevel} />
-        {username ? (
-          <>
-            <button
-              className="header-btn"
-              onClick={() => setShowQuestionModal(true)}
-            >
-              Pune o întrebare
-            </button>
-
-            {questions.length > 0 && (
-              <button
-                className="header-btn secondary"
-                onClick={() => setShowQuestionsModal(true)}
-              >
-                Vezi întrebările
-              </button>
-            )}
-          </>
-        ) : (
-          <Link to="/auth" className="header-btn">
-            Autentificare / Creare cont
+    <>
+      <header className="level-header-bar">
+        <div className="level-header-left">
+          <Link to={"/"} className="site-link">
+            <img src={logo} alt="Logo" className="level-logo" />
+            <span className="site-name">AlgoCraft</span>
           </Link>
-        )}
-      </div>
+          {username ? (
+            <p>Bine ai venit, <strong>{username}</strong></p>
+          ) : null}
+
+          {isCompleted && <span className="completed-label">Rezolvat ✔</span>}
+        </div>
+
+        <div className="level-header-center">
+          <h2>
+            {chapterName ?? "Capitol"}: {levelName ?? "Nivel"}
+          </h2>
+        </div>
+
+        <div className="level-header-right">
+          <LevelNavigation prevLevel={prevLevel} nextLevel={nextLevel} />
+          {username ? (
+            <>
+              <button
+                className="header-btn"
+                onClick={() => setShowQuestionModal(true)}
+              >
+                Pune o întrebare
+              </button>
+
+              {questions.length > 0 && (
+                <button
+                  className="header-btn secondary"
+                  onClick={() => setShowQuestionsModal(true)}
+                >
+                  Vezi întrebările
+                </button>
+              )}
+            </>
+          ) : (
+            <Link to="/auth" className="header-btn">
+              Autentificare / Creare cont
+            </Link>
+          )}
+        </div>
+      </header>
 
       {showQuestionModal && (
         <AskQuestionModal
@@ -108,6 +110,6 @@ export function LevelHeader({
           onClose={() => setShowQuestionsModal(false)}
         />
       )}
-    </header>
+    </>
   );
 }

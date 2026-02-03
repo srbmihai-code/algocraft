@@ -11,8 +11,9 @@ export function ViewQuestionsModal({ questions, onClose }: Props) {
       <div className="modal">
         <h3>Întrebările tale pentru acest nivel</h3>
         {questions.map((q) => (
-          <div key={q.id} className="question-item" style={{ marginBottom: 12 }}>
+          <div key={q.id} className="question-item">
             <strong>Întrebare:</strong> {q.question}
+            <br />
             {q.html_code && (
               <>
                 <strong>Cod HTML:</strong>
@@ -39,8 +40,8 @@ export function ViewQuestionsModal({ questions, onClose }: Props) {
           </div>
         ))}
 
-        <div style={{ display: "flex", justifyContent: "flex-end" }}>
-          <button onClick={onClose}>Închide</button>
+        <div className="modal-actions">
+          <button className="header-btn secondary" onClick={onClose}>Închide</button>
         </div>
       </div>
     </div>

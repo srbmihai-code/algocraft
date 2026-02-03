@@ -71,13 +71,13 @@ export function AskQuestionModal({
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           rows={4}
-          style={{ width: "100%", marginBottom: 8 }}
+          className="modal-textarea"
         />
         {error && <p className="error">{error}</p>}
         {message && <p className="message">{message}</p>}
-        <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-          <button onClick={onClose}>Închide</button>
-          <button onClick={submitQuestion}>Trimite</button>
+        <div className="modal-actions">
+          <button className="header-btn secondary" onClick={onClose}>Închide</button>
+          <button className="header-btn" onClick={submitQuestion}>Trimite</button>
         </div>
       </div>
     </div>

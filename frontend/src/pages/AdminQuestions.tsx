@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getApiBase } from "../utils/apiBase";
 import { Link } from "react-router-dom";
+import "./AdminQuestions.css";
 
 export default function AdminQuestions() {
     const [questions, setQuestions] = useState<any[]>([]);
@@ -44,50 +45,61 @@ export default function AdminQuestions() {
     // Forbidden for non-admins
     if (!isAdmin)
         return (
-          <div style={{ padding: 20 }}>
-              <h2>Forbidden</h2>
-              <p>Nu ai acces la această pagină.</p>
-              <Link to="/levels">← Înapoi</Link>
+          <div className="admin-page">
+              <div className="admin-container">
+                  <h2>Forbidden</h2>
+                  <p>Nu ai acces la această pagină.</p>
+                  <Link to="/levels" className="admin-back">← Înapoi</Link>
+              </div>
           </div>
         );
 
     return (
-      <div style={{ padding: 20 }}>
-          <Link to="/levels">← Înapoi</Link>
-          <h2>Întrebări utilizatori</h2>
-
-          {questions.map(q => (
-            <div key={q.id} style={{ border: "1px solid #444", padding: 15, marginBottom: 20 }}>
-                <p><strong>User:</strong> {q.username}</p>
-                <p><strong>Capitol:</strong> {q.chapter_name}</p>
-                <p><strong>Nivel:</strong> {q.level_name}</p>
-                <p><strong>Întrebare:</strong> {q.question}</p>
-                <p><strong>Creat:</strong> {q.created_at}</p>
-
-                <details>
-                    <summary>Cod utilizator</summary>
-                    <pre>{q.html_code}</pre>
-                    <pre>{q.css_code}</pre>
-                    <pre>{q.js_code}</pre>
-                </details>
-
-                {q.answer ? (
-                  <>
-                      <p><strong>Răspuns admin:</strong> {q.answer}</p>
-                      <p><em>{q.answered_at}</em></p>
-                  </>
-                ) : (
-                  <>
-              <textarea
-                placeholder="Scrie răspuns..."
-                onChange={e => setAnswerMap({ ...answerMap, [q.id]: e.target.value })}
-              />
-                      <br />
-                      <button onClick={() => submitAnswer(q.id)}>Răspunde</button>
-                  </>
-                )}
+      <div className="admin-page">
+          <div className="admin-container">
+            <div className="admin-header">
+              <Link to="/levels" className="admin-back">← Înapoi</Link>
+              <h2>Întrebări utilizatori</h2>
             </div>
-          ))}
+
+            <div className="admin-list">
+              {questions.map(q => (
+                <div key={q.id} className="admin-card">
+                    <div className="admin-meta">
+                      <p><strong>User:</strong> {q.username}</p>
+                      <p><strong>Capitol:</strong> {q.chapter_name}</p>
+                      <p><strong>Nivel:</strong> {q.level_name}</p>
+                      <p><strong>Întrebare:</strong> {q.question}</p>
+                      <p><strong>Creat:</strong> {q.created_at}</p>
+                    </div>
+
+                    {(q.html_code || q.css_code || q.js_code) && (
+                      <div className="admin-details">
+                        <strong>Cod utilizator</strong>
+                        {q.html_code && <pre>{q.html_code}</pre>}
+                        {q.css_code && <pre>{q.css_code}</pre>}
+                        {q.js_code && <pre>{q.js_code}</pre>}
+                      </div>
+                    )}
+
+                    {q.answer ? (
+                      <div className="admin-answer">
+                          <p><strong>Răspuns admin:</strong> {q.answer}</p>
+                          <p><em>{q.answered_at}</em></p>
+                      </div>
+                    ) : (
+                      <div className="admin-reply">
+                        <textarea
+                          placeholder="Scrie răspuns..."
+                          onChange={e => setAnswerMap({ ...answerMap, [q.id]: e.target.value })}
+                        />
+                        <button className="admin-btn" onClick={() => submitAnswer(q.id)}>Răspunde</button>
+                      </div>
+                    )}
+                </div>
+              ))}
+            </div>
+          </div>
       </div>
     );
 }
