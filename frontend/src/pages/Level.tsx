@@ -92,7 +92,7 @@ export default function Level() {
       { credentials: "include" }
     )
       .then(res => (res.ok ? res.json() : null))
-      .then(data => {
+      .then(data => { 
         if (data?.success) setQuestions(data.questions);
       })
       .catch(() => {});
