@@ -42,6 +42,10 @@ export function LevelHeader({
 }: Props) {
   const [showQuestionModal, setShowQuestionModal] = useState(false);
   const [showQuestionsModal, setShowQuestionsModal] = useState(false);
+  const safeChapterName = chapterName ?? "Capitol";
+  const safeLevelName = levelName ?? "Nivel";
+  const fullTitle = `${safeChapterName}: ${safeLevelName}`;
+  const headerTitle = fullTitle.length > 44 ? safeLevelName : fullTitle;
 
   return (
     <>
@@ -59,12 +63,14 @@ export function LevelHeader({
         </div>
 
         <div className="level-header-center">
-          <h2>
-            {chapterName ?? "Capitol"}: {levelName ?? "Nivel"}
-          </h2>
+          <h2>{headerTitle}</h2>
         </div>
 
-        <div className="level-header-right">
+        <div
+          className={`level-header-right${
+            username && questions.length > 0 ? " has-questions" : ""
+          }`}
+        >
           <LevelNavigation prevLevel={prevLevel} nextLevel={nextLevel} />
           {username ? (
             <>

@@ -126,7 +126,10 @@ export default function LevelsList() {
             );
             if (!res.ok) return [level.levelURL, false] as const;
             const data = await res.json();
-            return [level.levelURL, !!data?.success && data.questions?.length > 0] as const;
+            const hasAnswered = !!data?.success && Array.isArray(data.questions)
+              ? data.questions.some((q: any) => q?.answer || q?.answered_at)
+              : false;
+            return [level.levelURL, hasAnswered] as const;
           } catch {
             return [level.levelURL, false] as const;
           }

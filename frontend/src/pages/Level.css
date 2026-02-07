@@ -27,7 +27,7 @@
   padding: 0 10px 10px;
   border: 1px solid #ccc;
   background-color: #fafafa;
-  height: 100%;
+  min-height: 100%;
   border-radius: 10px;
 }
 
@@ -44,7 +44,7 @@
 }
 
 iframe.preview {
-  height: 72.5vh;
+  height: 70vh;
   border: none;
   background: white;
   border-radius: 10px;
@@ -104,7 +104,7 @@ button.run-test:hover {
   border: 1px solid green;
   max-height: 240px;
   overflow-y: auto;
-  font-size: 0.95rem;
+  font-size: 0.rem;
   border-radius: 8px;
 }
 
@@ -176,7 +176,11 @@ pre.wrap {
   top: 0;
   z-index: 1000;
 }
-
+.level-header-bar .btn, .header-btn {
+  padding: .7vw 1vw;
+  font-size: .8vw;
+  border: none;
+}
 .level-header-left,
 .level-header-right {
   display: flex;
@@ -196,16 +200,26 @@ pre.wrap {
   justify-self: end;
 }
 
+.level-header-right.has-questions .header-btn,
+.level-header-right.has-questions .btn {
+  padding: .5vw .8vw;
+  font-size: .7vw;
+}
+
+
 .level-header-center {
   text-align: center;
 }
 
 .level-header-center h2 {
   margin: 0;
-  font-size: 1.4rem;
+  display: inline-block;
+  width: 22ch;
+  font-size: clamp(12px, 1.2vw, 25px);
   font-weight: 600;
   color: #0f172a;
 }
+
 
 .completed-label {
   background-color: #22c55e;
