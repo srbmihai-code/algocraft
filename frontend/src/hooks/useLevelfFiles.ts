@@ -33,6 +33,10 @@ export function useLevelFiles({
 
   useEffect(() => {
     if (!chapterName || !levelURL) return;
+    let cancelled = false;
+
+    setTestFuncCode(null);
+    setInputTestFuncCode(null);
 
     const safeChapter = chapterName.replace(/[^a-zA-Z0-9_-]/g, "");
     const safeLevel = levelURL.replace(/[^a-zA-Z0-9_-]/g, "");
@@ -94,14 +98,15 @@ export function useLevelFiles({
         }
       }
 
-      
-      if (!fetchPromises.test) setTestFuncCode(null);
-      if (!fetchPromises.inputTest) setInputTestFuncCode(null);
-
-      setFiles(newFiles);
+      if (!cancelled) {
+        setFiles(newFiles);
+      }
     };
 
     loadFiles();
+    return () => {
+      cancelled = true;
+    };
   }, [chapterName, levelURL, setTestFuncCode, setInputTestFuncCode]);
 
   return files;

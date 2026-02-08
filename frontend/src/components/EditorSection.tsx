@@ -30,11 +30,23 @@ export function EditorSection({
 
   const [activeTab, setActiveTab] = useState<string | null>(null);
 
+  const hasHtml = htmlCode !== undefined;
+  const hasCss = cssCode !== undefined;
+  const hasJs = jsCode !== undefined;
+
   useEffect(() => {
-    if (jsCode !== undefined) setActiveTab("js");
-    else if (cssCode !== undefined) setActiveTab("css");
-    else if (htmlCode !== undefined) setActiveTab("html");
-  }, [htmlCode, cssCode, jsCode]);
+    if (
+      activeTab === "html" && hasHtml ||
+      activeTab === "css" && hasCss ||
+      activeTab === "js" && hasJs
+    ) {
+      return;
+    }
+
+    if (hasJs) setActiveTab("js");
+    else if (hasCss) setActiveTab("css");
+    else if (hasHtml) setActiveTab("html");
+  }, [activeTab, hasHtml, hasCss, hasJs]);
 
   const currentTab = tabs.find(tab => tab.value === activeTab);
 

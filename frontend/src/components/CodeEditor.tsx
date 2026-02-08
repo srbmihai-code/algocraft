@@ -15,6 +15,7 @@ export function CodeEditor({ title, value, onChange }: CodeEditorProps) {
   return (
     <div className="code-editor-wrapper">
       <CodeMirror
+        key={title}
         value={value}
         height="85vh"
         extensions={

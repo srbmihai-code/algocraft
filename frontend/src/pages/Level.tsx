@@ -56,6 +56,9 @@ export default function Level() {
   useEffect(() => {
     setTestFuncCode(null);
     setInputTestFuncCode(null);
+    setHtmlCode("");
+    setCssCode("");
+    setJsCode("");
   }, [chapterURL, levelURL]);
 
   useEffect(() => {
