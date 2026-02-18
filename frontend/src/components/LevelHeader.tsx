@@ -71,7 +71,7 @@ export function LevelHeader({
             username && questions.length > 0 ? " has-questions" : ""
           }`}
         >
-          <LevelNavigation prevLevel={prevLevel} nextLevel={nextLevel} />
+          <LevelNavigation prevLevel={prevLevel} nextLevel={nextLevel} currentURL={chapterURL}/>
           {username ? (
             <>
               <button

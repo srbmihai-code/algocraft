@@ -210,16 +210,17 @@
 
 .levels-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(236px, 1fr));
   gap: 1rem;
 }
 
 .level-card {
   background: #ffffff;
   border-radius: 16px;
-  padding: 0.9rem 1rem;
+  padding: 1.15rem 1.25rem;
   text-decoration: none;
   color: inherit;
+  min-height: 6.5rem;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -241,7 +242,7 @@
 
 .level-title {
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 1.05rem;
 }
 
 .level-meta {

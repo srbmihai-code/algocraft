@@ -13,3 +13,5 @@ Vom folosi input-urile împreună cu formularele în nivelul următor.
 
 ### 🎯 Sarcină
 Adaugă un input pentru numele utilizatorului cu atributurile ``id="nume" type="text" placeholder="Nume"``.
+
+Sfat: atributele trebuie să fie în interiorul tag-ului, adică ``<input id="nume">``
