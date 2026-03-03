@@ -3,7 +3,7 @@
 În **JavaScript**, condițiile ne permit să luăm decizii: dacă o afirmație este adevărată, facem un lucru, iar dacă este falsă, facem altul.
 Pentru asta folosim instrucțiunea **`if`** (dacă) și opțional **`else`** (altfel).
 
-### 🔍 Cum funcționează un `if`
+### Cum funcționează un `if`
 
 Sintaxa de bază:
 

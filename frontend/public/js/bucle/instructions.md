@@ -4,7 +4,7 @@
 
 În **JavaScript**, buclele ne permit să repetăm codul cât timp o condiție este adevărată.
 
-### 🔍 Bucla `while`
+### Bucla `while`
 
 Sintaxa de bază:
 
@@ -33,7 +33,7 @@ while (i < 5) { // condiție
 
 Buclele `for` sunt utile când știm **de câte ori vrem să repetăm codul**.
 
-### 🔍 Cum funcționează `for`
+### Cum funcționează `for`
 
 Sintaxa:
 
