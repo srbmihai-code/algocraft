@@ -9,6 +9,7 @@ interface EditorSectionProps {
   setCssCode: (value: string) => void;
   setJsCode: (value: string) => void;
   onRun: () => void;
+  onAskAi?: () => void;
   runLabel: string;
 }
 
@@ -20,6 +21,7 @@ export function EditorSection({
   setCssCode,
   setJsCode,
   onRun,
+  onAskAi,
   runLabel,
 }: EditorSectionProps) {
   const tabs = [
@@ -75,6 +77,11 @@ export function EditorSection({
       </div>
 
       <div className="editor-footer">
+        {onAskAi && (
+          <button className="header-btn secondary" onClick={onAskAi}>
+            Intreaba AI
+          </button>
+        )}
         <button className="editor-run-btn" onClick={onRun}>
           {runLabel}
         </button>

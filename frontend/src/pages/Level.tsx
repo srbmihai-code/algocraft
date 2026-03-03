@@ -6,6 +6,7 @@ import { useLevelFiles } from "../hooks/useLevelfFiles";
 import { useLevelRunner } from "../hooks/useLevelRunner";
 import { LevelHeader } from "../components/LevelHeader";
 import { EditorSection } from "../components/EditorSection";
+import { AskQuestionModal } from "../components/AskQuestionModal";
 import getNamesFromURLs from "../utils/getNamesFromURL";
 import { getApiBase } from "../utils/apiBase";
 import "./Level.css";
@@ -25,7 +26,10 @@ export type Question = {
 };
 
 export default function Level() {
-  const { chapterName: chapterURL, levelURL } = useParams<{ chapterName: string; levelURL: string }>();
+  const { chapterName: chapterURL, levelURL } = useParams<{
+    chapterName: string;
+    levelURL: string;
+  }>();
 
   const [htmlCode, setHtmlCode] = useState("");
   const [cssCode, setCssCode] = useState("");
@@ -36,6 +40,7 @@ export default function Level() {
   const [username, setUsername] = useState<string | null>(null);
   const [isCompleted, setIsCompleted] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
+  const [showAskAiModal, setShowAskAiModal] = useState(false);
 
   const { prevLevel, nextLevel } = usePrevNextLevel(chapterURL, levelURL);
 
@@ -65,8 +70,8 @@ export default function Level() {
     if (authChecked) return;
 
     fetch(`${getApiBase()}/me`, { credentials: "include" })
-      .then(res => (res.ok ? res.json() : null))
-      .then(data => {
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
         if (data?.username) setUsername(data.username);
       })
       .finally(() => setAuthChecked(true));
@@ -76,12 +81,10 @@ export default function Level() {
     if (!authChecked || !username || !levelURL) return;
 
     fetch(`${getApiBase()}/completed-levels`, { credentials: "include" })
-      .then(res => (res.ok ? res.json() : null))
-      .then(data => {
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
         if (data?.success) {
-          setIsCompleted(
-            data.levels.some((l: any) => l.level_name === levelURL)
-          );
+          setIsCompleted(data.levels.some((l: any) => l.level_name === levelURL));
         }
       })
       .catch(() => {});
@@ -91,15 +94,18 @@ export default function Level() {
     if (!authChecked || !username || !chapterURL || !levelURL) return;
 
     fetch(
-      `${getApiBase()}/questions?chapterName=${encodeURIComponent(chapterURL)}&levelName=${encodeURIComponent(levelURL)}`,
+      `${getApiBase()}/questions?chapterName=${encodeURIComponent(
+        chapterURL
+      )}&levelName=${encodeURIComponent(levelURL)}`,
       { credentials: "include" }
     )
-      .then(res => (res.ok ? res.json() : null))
-      .then(data => { 
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
         if (data?.success) setQuestions(data.questions);
       })
       .catch(() => {});
   }, [authChecked, username, chapterURL, levelURL]);
+
   const {
     iframeRef,
     previewIframeRef,
@@ -131,7 +137,7 @@ export default function Level() {
   }, [chapterURL, levelURL]);
 
   const { chapterName, levelName } = getNamesFromURLs(chapterURL, levelURL);
-  console.log(username)
+  console.log(username);
 
   useEffect(() => {
     const html = document.documentElement;
@@ -140,8 +146,8 @@ export default function Level() {
     const prevHtmlOverflow = html.style.overflow;
     const prevBodyOverflow = body.style.overflow;
 
-    html.style.overflow = 'hidden';
-    body.style.overflow = 'hidden';
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
 
     return () => {
       html.style.overflow = prevHtmlOverflow;
@@ -185,8 +191,9 @@ export default function Level() {
             setHtmlCode={setHtmlCode}
             setCssCode={setCssCode}
             setJsCode={setJsCode}
+            onAskAi={() => setShowAskAiModal(true)}
             onRun={TestFuncCode || InputTestFuncCode ? runTest : finishLevel}
-            runLabel={TestFuncCode || InputTestFuncCode ? "Rulează testul" : "Finalizează"}
+            runLabel={TestFuncCode || InputTestFuncCode ? "Ruleaza testul" : "Finalizeaza"}
           />
         </main>
 
@@ -224,7 +231,19 @@ export default function Level() {
         title="Test Runner"
         src="about:blank"
       />
+
+      {showAskAiModal && (
+        <AskQuestionModal
+          chapterURL={chapterURL}
+          levelURL={levelURL}
+          htmlCode={htmlCode}
+          cssCode={cssCode}
+          jsCode={jsCode}
+          instructions={files.instructions || ""}
+          mode="ai"
+          onClose={() => setShowAskAiModal(false)}
+        />
+      )}
     </div>
   );
 }
-``

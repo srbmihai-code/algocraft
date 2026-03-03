@@ -12,6 +12,42 @@ console.log(process.env.ADMIN_PASSWORD)
 app.use(express.json());
 app.use(cookieParser());
 
+let aiClient = null;
+
+async function getAiClient() {
+  if (aiClient) return aiClient;
+
+  const { default: OpenAI } = await import("openai");
+  aiClient = new OpenAI({
+    apiKey: process.env.GROQ_API_KEY,
+    baseURL: "https://api.groq.com/openai/v1",
+  });
+
+  return aiClient;
+}
+
+async function askLLM(userPrompt) {
+  const client = await getAiClient();
+  const systemPrompt =
+    "Acesta este un site educațional. Oferă explicații și indicii, nu răspunsul direct. Ajută utilizatorul să înțeleagă conceptul și să găsească soluția singur. Răspunde concis.";
+  const response = await client.chat.completions.create({
+    model: "llama-3.3-70b-versatile",
+    messages: [
+      {
+        role: "system",
+        content: systemPrompt,
+      },
+      {
+        role: "user",
+        content: userPrompt,
+      },
+    ],
+    temperature: 0.2,
+  });
+
+  return response.choices?.[0]?.message?.content || "";
+}
+
 app.set("trust proxy", 1);
 app.use(
   session({
@@ -276,6 +312,47 @@ app.post("/api/questions", (req, res) => {
     });
 });
 
+app.post("/api/ask_ai", async (req, res) => {
+  if (!req.session.userId && !req.session.admin) {
+    return res.status(401).json({ success: false, message: "Neautorizat." });
+  }
+
+  const { chapterName, levelName, question, htmlCode, cssCode, jsCode, instructions } = req.body;
+
+  if (!question || !question.trim()) {
+    return res.status(400).json({ success: false, message: "Intrebarea este obligatorie." });
+  }
+
+  if (!process.env.GROQ_API_KEY) {
+    return res.status(500).json({ success: false, message: "Lipseste GROQ_API_KEY in .env." });
+  }
+
+  const prompt = [
+    "Context nivel:",
+    `Capitol: ${chapterName || "-"}`,
+    `Nivel: ${levelName || "-"}`,
+    "",
+    "Instructiuni nivel:",
+    instructions || "-",
+    "",
+    "Cod utilizator:",
+    `HTML:\n${htmlCode || ""}`,
+    `CSS:\n${cssCode || ""}`,
+    `JS:\n${jsCode || ""}`,
+    "",
+    "Intrebarea utilizatorului:",
+    question,
+  ].join("\n");
+
+  try {
+    const answer = await askLLM(prompt);
+    return res.json({ success: true, answer });
+  } catch (err) {
+    console.error("ask_ai error:", err);
+    return res.status(500).json({ success: false, message: "Eroare la generarea raspunsului AI." });
+  }
+});
+
 // Admin fetches all questions with answers
 app.get("/api/admin/questions", (req, res) => {
   if (!req.session.admin)
@@ -334,3 +411,4 @@ app.get(/^\/(?!api).*$/, (req, res) => {
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
+

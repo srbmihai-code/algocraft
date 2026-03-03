@@ -28,4 +28,4 @@ users.db
 generator.js
 qodana.yaml
 /package.json
-/package-lock.json.json
+/package-lock.json
